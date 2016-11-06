@@ -21,11 +21,17 @@
             article p {
                 font-family: sans-serif;
             }
-            main li {
-                border-bottom: 1px solid #0066cc;
+            h2 + p {
+                padding-top: 20px;
             }
-            main ul li {
-                border-bottom-style: dotted;
+            main li ~ li {
+                border-top: 1px solid #0066cc;
+            }
+            main ul li ~ li {
+                border-top-style: dotted;
+            }
+            main li:first-child {
+                text-indent: 15px;
             }
             .subheading {
                 background: #e0e0e0;
@@ -34,6 +40,28 @@
                 font-size: 20px;
                 text-decoration: underline;
             }
+            
+            header li:hover ul {
+                display: block;
+            }
+            input[type="text"]:focus {
+                background: #fff9b5;
+            }
+            input[type="checkbox"]:checked + span {
+                font-weight: bold;
+            }            input[type="text"] {
+                border: 1px solid #999999;
+            }
+            input[required] {
+                border: 1px solid #004f75;
+            }
+            tr:nth-of-type(odd) td {
+                background: #d4f7fb;
+            }
+            td:nth-of-type(3n) {
+                text-align: center;
+            }
+
         </style>
     </head>
     <body>
