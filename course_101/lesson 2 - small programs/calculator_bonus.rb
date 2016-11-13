@@ -1,7 +1,7 @@
 # at the top of calculator.rb
 
 require 'yaml'
-MESSAGES = YAML.load_file('calculatorv3_messages.yml')
+MESSAGES = YAML.load_file('calculator_bonus_messages.yml')
 
 def prompt(message)
   Kernel.puts("=> #{message}")
