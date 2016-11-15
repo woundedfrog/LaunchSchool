@@ -10,8 +10,8 @@ COMBOS = {
   'r' => %w(s l),
   'p' => %w(r sp),
   's' => %w(p l),
-  'sp' => %w(r s),
-  'l' => %w(sp p)
+  'l' => %w(sp p),
+  'sp' => %w(r s)
 }
 
 def test_method
@@ -34,8 +34,7 @@ def display_results(player, computer)
     prompt("You've managed to beat the computer. Congratulations!")
   elsif win?(computer, player)
     prompt("Computer won!")
-  else
-    prompt("It's a tie!")
+    prompt("How could you let this happen?")
   end
 end
 
@@ -52,7 +51,15 @@ end
 player_score = 0
 computer_score = 0
 
-loop do
+def break_loop 
+     prompt("Do you want to play again?('y' or 'n')")
+    answer = Kernel.gets().chomp()
+    player_score = 0
+  computer_score = 0
+end
+
+loop do  
+  
   choice = ''
   loop do
       choice_prompt = <<-MSG
@@ -89,30 +96,26 @@ MSG
   else
     score_counter(player_score, computer_score)
   end
-
+  
+  answer = ''
   if player_score == 5
-display_results(choice, computer_choice)
+  display_results(choice, computer_choice)
+    break_loop
     elsif computer_score == 5
-display_results(choice, computer_choice)
-      else player_score == 5 && computer_score == 5
-display_results(choice, computer_choice)
+  display_results(choice, computer_choice)
+    break_loop
+    elsif player_score == 5 && computer_score == 5
+    prompt("It's a tie!")
+    prompt("Well, try harder next time!")
+    break_loop
   end
-#  prompt("Do you want to play again?")
+  
+#   prompt("Do you want to play again?")
 #  answer = Kernel.gets().chomp()
-#  break unless answer.downcase().start_with?('y')
+  break unless answer.downcase().start_with?('y')
+    
+#    
 end
 
+
 prompt("Thank you for playing!")
-
-
-#
-#break if player_score == 5
-#  prompt("You've managed to beat the computer. Congratulations!")
-#  
-#elsif computer_score == 5
-#  prompt("The computer has completely overpowered you.")
-#  break
-#elsif player_score == computer_score
-#  prompt("Good luck next time!")
-#  break
-#end
