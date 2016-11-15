@@ -52,8 +52,8 @@ player_score = 0
 computer_score = 0
 
 loop do
-
   choice = ''
+
   loop do
     choice_prompt = <<-MSG
   Make a choice:
