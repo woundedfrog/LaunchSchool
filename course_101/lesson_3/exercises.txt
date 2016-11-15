@@ -1,0 +1,66 @@
+#EXERCISE 1:
+
+numbers = [1, 2, 2, 3]
+numbers.uniq
+
+puts numbers
+
+This would print out each number on a seperate line becasue 'puts' is used. 
+ If 'p' was used, it would display them as [1,2,2,3]
+ number.uniq is not displayed because it creates a new array, but does not print to console.
+
+#EXERCISE 2:
+
+"!" and "?" : You don't know since it depends on the method and how it's implemented. "!" is usually destructive when applied to a method.
+
+1: !=  means "NOT EQUAL"
+2: will turn the object to boolean 'false'
+3: It would make the 'uniq' method destructive, modifying the 'words' object. s apposed to making a new object(copying)
+4: It's another way to form the 'if ~ else' operation.
+5: turns object into a boolean form. ex: x.empty? will return true if 'x' is empty.
+6: Will turn the object to boolean 'true'
+
+#EXERCISE 3:
+
+advice.gsub!('important', 'urgent')
+
+
+#EXERCISE 4:
+
+numbers.delete_at(1)
+## this will delete the number at index '1'. In this case it is the number 2
+numbers.delete(1)
+## this will delete the '1' in the array. 
+
+
+##EXERCISE 5:
+
+(10..100).cover?(42)
+
+
+#EXERCISE 6:
+
+1) "Four score and " + famous_words
+2) famous_words.prepend("Four score and ")
+
+#EXERCISE 7:
+
+eval(how_deep) = 42
+
+
+#EXERCISE 8:
+
+flintstones.flatten!
+
+
+#EXERCISE 9:
+
+flintstones.assoc("Barney")
+
+
+#EXERCISE 10:
+
+flintstones_hash = {}
+flintstones.each_with_index do |name, index|
+  flintstones_hash[name] = index
+end
