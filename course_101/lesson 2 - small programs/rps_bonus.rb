@@ -22,8 +22,8 @@ def prompt(message)
   Kernel.puts("=> #{message}")
 end
 
-def win?(first, second)
-  COMBOS[first].include?(second)
+def win?(key, value)
+  COMBOS[key].include?(value)
 end
 
 test_method
