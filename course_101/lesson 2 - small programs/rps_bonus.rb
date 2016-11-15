@@ -23,7 +23,7 @@ def prompt(message)
 end
 
 def win?(first, second)
-   COMBOS[first].include?(second)
+  COMBOS[first].include?(second)
 end
 
 test_method
@@ -51,18 +51,11 @@ end
 player_score = 0
 computer_score = 0
 
-def break_loop 
-     prompt("Do you want to play again?('y' or 'n')")
-    answer = Kernel.gets().chomp()
-    player_score = 0
-  computer_score = 0
-end
+loop do
 
-loop do  
-  
   choice = ''
   loop do
-      choice_prompt = <<-MSG
+    choice_prompt = <<-MSG
   Make a choice:
   r  ----> Rock
   p  ----> Paper
@@ -71,7 +64,7 @@ loop do
   sp ----> Spock
 MSG
 
-  prompt(choice_prompt)
+    prompt(choice_prompt)
 
     choice = Kernel.gets().chomp()
 
@@ -86,7 +79,6 @@ MSG
 
   prompt("You chose: #{CHOICE_NAMES[choice]} **** Computer chose: #{CHOICE_NAMES[computer_choice]}")
 
-  
   if win?(choice, computer_choice)
     player_score += 1
     score_counter(player_score, computer_score)
@@ -96,26 +88,24 @@ MSG
   else
     score_counter(player_score, computer_score)
   end
-  
-  answer = ''
+
   if player_score == 5
-  display_results(choice, computer_choice)
-    break_loop
-    elsif computer_score == 5
-  display_results(choice, computer_choice)
-    break_loop
-    elsif player_score == 5 && computer_score == 5
+    display_results(choice, computer_choice)
+  elsif computer_score == 5
+    display_results(choice, computer_choice)
+  elsif player_score == 5 && computer_score == 5
     prompt("It's a tie!")
     prompt("Well, try harder next time!")
-    break_loop
   end
-  
-#   prompt("Do you want to play again?")
-#  answer = Kernel.gets().chomp()
-  break unless answer.downcase().start_with?('y')
-    
-#    
-end
 
+  answer = ''
+  loop do
+    prompt("Play_agian?('y' or 'n')")
+    answer = gets.chomp
+    break if answer.casecmp('y') || answer.casecmp('n')
+    prompt("That's not a valid answer")
+  end
+  break if answer == 'n'
+end
 
 prompt("Thank you for playing!")
