@@ -1,0 +1,46 @@
+#EXERCISE 1:
+
+ages.key?("Spot")
+*Bonus answer: Hash#include? and Hash#member?
+
+
+#EXERCISE 2:
+
+ages.values.inject(:+)
+
+#EXERCISE 3:
+
+ages.keep_if { |name, age| age < 100 }
+
+#EXERCISE 4:
+
+munsters_description.capitalize!
+munsters_description.swapcase!
+munsters_description.downcase!
+munsters_description.upcase!
+
+#EXERCISE 5:
+
+ages.merge!(additional_ages)
+
+#EXERCISE 6:
+
+ages.values.min
+
+#EXERCISE 7:
+
+advice.match("Dino")
+
+#EXERCISE 8:
+
+flintstones.index { |name| name[0, 2] == "Be" }
+
+#EXERCISE 9:
+
+flintstones.map! do |name|
+  name[0, 3]
+end
+
+#EXERCISE 10:
+
+flintstones.map! { |name| name[0,3] }
