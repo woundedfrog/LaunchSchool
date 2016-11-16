@@ -1,0 +1,84 @@
+#EXERCISE 1:
+
+10.times { |number| puts (" " * number) + "The Flintstones Rock!" }
+
+#EXERCISE 2:
+
+result = {}
+letters = ('A'..'Z').to_a + ('a'..'z').to_a
+letters.each do |letter|
+  frequency = statement.scan(letter).count
+  result[letter] = frequency if frequency > 0
+end
+
+#EXERCISE 3:
+
+(40+2).to_s
+or
+puts "the value of 40 + 2 is #{40 + 2}"
+
+#EXERCISE 4:
+
+First: 1 3
+Second: 1 2
+
+It edits the original array, NOT a copy of it. Thus the index values change each time the 'each' loops.
+
+#EXERCISE 5:
+
+while dividend > 0 do
+  divisors << number / dividend if number % dividend == 0
+  dividend -= 1
+end
+
+BONUS:
+
+Tests if division is an integer.
+
+Bonus 2:
+
+This returns the results.
+
+#EXERCISE 6:
+
+Both return the same value, but they are different.
+In the Rolling_buffer1 the caller's argument('buffer')is changed once the value is returned at the end of the code.
+In the Rolling_buffer2 the caller'sarguments are not changed after the final value is returned.
+
+#EXERCISE 7:
+
+
+def fib(first_num, second_num)
+  limit = 15
+  while second_num < limit
+    sum = first_num + second_num
+    first_num = second_num
+    second_num = sum
+  end
+  sum
+end
+
+result = fib(0, 1)
+puts "result is #{result}"
+
+*Before the fib method could not access a variable outside of its scope.
+
+
+#EXERCISE 8:
+
+words.split.map(&:capitalize).join(' ')
+
+
+#EXERCISE 9:
+
+munsters.each do |name, information|
+  case information["age"]
+  when 0...18
+    information["age_group"] = "kid"
+  when 18...65
+    information["age_group"] = "adult"
+  else
+    information["age_group"] = "senior"
+  end
+end
+

@@ -1,0 +1,25 @@
+#EXERCISE 1:
+
+flintstones = %w(Fred Barney Wilma Betty BamBam Pebbles)
+
+#EXERCISE 2:
+
+flintstones << "Dino"
+
+#EXERCISE 3:
+
+flintstones.push("Dino", "Hoppy")
+
+#EXERCISE 4:
+
+advice.slice!(0, advice.index('house'))
+
+#EXERCISE 5:
+
+statement.scan('t').count
+or
+statement.scan('t').length
+
+#EXERCISE 6:
+
+title.center(40)
