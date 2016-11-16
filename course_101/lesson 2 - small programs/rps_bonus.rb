@@ -42,8 +42,11 @@ def score_counter(player_score, computer_score)
   end
 end
 
-player_score = 0
-computer_score = 0
+scores = { player_score: 0, computer_score: 0 }
+
+def score_increment(hash_to_mutate, key_to_mutate)
+  hash_to_mutate[key_to_mutate] += 1
+end
 
 loop do
   choice = ''
@@ -74,23 +77,24 @@ MSG
   prompt("You chose: #{CHOICE_NAMES[choice]} ** Computer chose: #{CHOICE_NAMES[computer_choice]}")
 
   if win?(choice, computer_choice)
-    player_score += 1
+    score_increment(scores, :player_score)
   elsif win?(computer_choice, choice)
-    computer_score += 1
+    score_increment(scores, :computer_score)
   end
-  score_counter(player_score, computer_score)
+  score_counter(scores[:player_score], scores[:computer_score])
 
-  if player_score == 5
+  if scores[:player_score] == 5
     display_results(choice, computer_choice)
-  elsif computer_score == 5
+    scores.update(scores) { 0 }
+  elsif scores[:computer_score] == 5
     display_results(choice, computer_choice)
+    scores.update(scores) { 0 }
   end
 
   answer = ''
   loop do
     prompt("Play_agian?('y' or 'n')")
     answer = gets.chomp
-
     break if answer.casecmp('y') || answer.casecmp('n')
     prompt("That's not a valid answer")
   end
