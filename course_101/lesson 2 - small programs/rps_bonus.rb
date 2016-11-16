@@ -48,6 +48,12 @@ def score_increment(hash_to_mutate, key_to_mutate)
   hash_to_mutate[key_to_mutate] += 1
 end
 
+def reset_scores(scores)
+#  scores[:player_score] = 0
+#  scores[:computer_score] = 0
+  scores.update(scores) { 0 }
+end
+
 loop do
   choice = ''
 
@@ -83,12 +89,9 @@ MSG
   end
   score_counter(scores[:player_score], scores[:computer_score])
 
-  if scores[:player_score] == 5
+  if scores[:player_score] == 5 || scores[:computer_score] == 5
     display_results(choice, computer_choice)
-    scores.update(scores) { 0 }
-  elsif scores[:computer_score] == 5
-    display_results(choice, computer_choice)
-    scores.update(scores) { 0 }
+    reset_scores(scores)
   end
 
   answer = ''

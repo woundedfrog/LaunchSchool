@@ -89,6 +89,7 @@ MSG
   end
   score_counter(scores[:player_score], scores[:computer_score])
 
+  
   if scores[:player_score] == 5
     display_results(choice, computer_choice)
     reset_scores(scores)
