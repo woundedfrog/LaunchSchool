@@ -49,8 +49,6 @@ def score_increment(hash_to_mutate, key_to_mutate)
 end
 
 def reset_scores(scores)
-#  scores[:player_score] = 0
-#  scores[:computer_score] = 0
   scores.update(scores) { 0 }
 end
 
