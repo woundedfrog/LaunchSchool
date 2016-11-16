@@ -1,22 +1,11 @@
-munsters = {
-  "Herman" => { "age" => 32, "gender" => "male" },
-  "Lily" => { "age" => 30, "gender" => "female" },
-  "Grandpa" => { "age" => 402, "gender" => "male" },
-  "Eddie" => { "age" => 10, "gender" => "male" },
-  "Marilyn" => { "age" => 23, "gender" => "female"}
-}
-
-puts munsters
-
-munsters.each do |name, information|
-  case information["age"]
-  when 0...18
-    information["age_group"] = "kid"
-  when 18...65
-    information["age_group"] = "adult"
+def rps(fist1, fist2)
+  if fist1 == "rock"
+    (fist2 == "paper") ? "paper" : "rock"
+  elsif fist1 == "paper"
+    (fist2 == "scissors") ? "scissors" : "paper"
   else
-    information["age_group"] = "senior"
+    (fist2 == "rock") ? "rock" : "scissors"
   end
 end
 
-puts munsters
+puts rps(rps(rps("rock", "paper"), rps("rock", "scissors")), "rock")

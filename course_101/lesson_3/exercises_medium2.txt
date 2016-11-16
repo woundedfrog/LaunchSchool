@@ -1,0 +1,48 @@
+#EXERCISE 1:
+
+total_age = 0
+munsters.each do |name, information|
+  total_age += information["age"] if information["gender"] == "male"
+end
+
+
+#EXERCISE 2:
+
+munsters.each do |name, details|
+  puts "#{name} is a #{details['age']} year old #{details['gender']}"
+end
+
+#EXERCISE 3:
+
+def tricky_method(a_string_param, an_array_param)
+  a_string_param += "rutabaga"
+  an_array_param << "rutabaga"
+  return a_string_param, an_array_param
+end
+
+my_string = "pumpkins"
+my_array = ["pumpkins"]
+my_string, my_array = tricky_method(my_string, my_array)
+
+puts "My string looks like this now: #{my_string}"
+puts "My array looks like this now: #{my_array}"
+
+#EXERCISE 4:
+
+backwards = sentence.split(/\W/).reverse!.join(' ') + '.'
+
+#EXERCISE 5:
+
+34
+
+#EXERCISE 6:
+
+Yes, the data was ransacked. 'demo_hash' points to the original hash 'munsters', but never reasigns it. Thus it modifies the original hash.
+
+#EXERCISE 7:
+
+'paper'
+
+#EXERCISE 8:
+
+"no"
