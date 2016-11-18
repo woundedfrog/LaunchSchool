@@ -1,0 +1,18 @@
+#EXERCISE 1:
+
+'greeting' is 'nil'. An 'undefined method or local variable' error is thrown.
+
+#EXERCISE 2:
+
+{:a=>"hi there"}
+This is because 'informal_greeting' is a reference to the original object, not a clone/copy of it.
+
+#EXERCISE 3:
+
+
+
+#EXERCISE 4:
+
+
+#EXERCISE 5:
+
