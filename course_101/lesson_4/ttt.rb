@@ -11,6 +11,7 @@ end
 def display_board(brd)
   system 'cls'
   system 'clear'
+  puts "You're a #{PLAYER_MARKER}. Computer is #{COMPUTER_MARKER}."
   puts ""
   puts "     |     |"
   puts "  #{brd[1]}  |  #{brd[2]}  |  #{brd[3]}  "
@@ -66,28 +67,45 @@ def detect_winner(brd)
                  [[1, 4, 7], [2, 5, 8], [3, 6, 9]] + # cols
                  [[1, 5, 9],[3, 5, 7]]               # diagonals
   
-  winning_lines.each do |lines|
+  winning_lines.each do |line|
     if brd[line[0]] == PLAYER_MARKER &&
        brd[line[1]] == PLAYER_MARKER &&
        brd[line[2]] == PLAYER_MARKER
        return 'Player'
+    elsif
+      brd[line[0]] == COMPUTER_MARKER &&
+       brd[line[1]] == COMPUTER_MARKER &&
+       brd[line[2]] == COMPUTER_MARKER
+      return 'Computer'
+    end
   end
+  nil
 end
-
-board = initialize_board
-display_board(board)
 
 loop do
-  player_places_piece!(board)
-  computer_places_piece!(board)
-  display_board(board)
-  break if someone_won?(board) || board_full?(board)
+  board = initialize_board
+
+  loop do
+    display_board(board)
+
+    player_places_piece!(board)
+    break if someone_won?(board) || board_full?(board)
+
+    computer_places_piece!(board)
+    break if someone_won?(board) || board_full?(board)
+  end
+
+    display_board(board)
+
+  if someone_won?(board)
+    prompt "#{detect_winner(board)} won!"
+  else
+    prompt "It's a tie!"
+  end
+  
+  prompt "Play again? (y or n)"
+  answer = gets.chomp
+  break unless answer.downcase.start_with?('y')
 end
 
-if someone_won?(board)
-  prompt "#{detect_winner(board)} won!"
-else
-  prompt "It's a tie!"
-end
-
-display_board(board)
+prompt "Tanks for playing Tic Tac Toe! Bye-Bye!"
