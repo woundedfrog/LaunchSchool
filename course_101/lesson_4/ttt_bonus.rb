@@ -108,13 +108,13 @@ end
 def who_first
   answer = ''
   loop do
-    prompt "Should player or computer go first? ('p' for player, 'c' for computer):"
-    answer = gets.chomp
-    break if answer.downcase == "p" || answer.downcase == "c"
+    prompt "Choose first player: ('p' for player, 'c' for computer):"
+    answer = gets.chomp.downcase
+    break if answer == "p" || answer == "c"
     prompt "Please input p or c."
   end
 
-  if answer.downcase == "p"
+  if answer == "p"
     "Player"
   else
     "Computer"
@@ -168,17 +168,6 @@ def show_results(player, computer)
   end
 end
 
-def valid_answer?
-  answer = nil
-  loop do
-    prompt "Play again? (y or n)"
-    answer = gets.chomp.downcase
-    break if answer == "y" || answer == "n"
-    prompt "Please input a valid response."
-  end
-  answer
-end
-
 loop do
   board = initialize_board
   display_board(board)
@@ -195,6 +184,7 @@ loop do
 
     if someone_won?(board)
       prompt "#{detect_winner(board)} won!"
+#      binding.pry
     else
       prompt "It's a tie!"
     end
@@ -208,7 +198,9 @@ loop do
     show_results(player_score, computer_score)
   end
 
-  break unless valid_answer? == "y"
+  prompt "Play again? (y or n)"
+  answer = gets.chomp
+  break unless answer.downcase.start_with?('y')
 end
 
 prompt "Tanks for playing Tic Tac Toe! Bye-Bye!"
