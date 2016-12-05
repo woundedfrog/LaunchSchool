@@ -13,7 +13,7 @@ end
 
 # rubocop:disable Metrics/MethodLength, Metrics/AbcSize
 def display_board(brd)
-  system 'cls' 
+  system 'cls'
   system 'clear'
   puts "You're a #{PLAYER_MARKER}. Computer is #{COMPUTER_MARKER}."
   puts ""
@@ -166,15 +166,15 @@ def show_results(player, computer)
 end
 
 loop do
-    player_score = 0
-    computer_score = 0
-    board = initialize_board
-    display_board(board)
-  
+  player_score = 0
+  computer_score = 0
+  board = initialize_board
+  display_board(board)
+
   loop do
     board = initialize_board
     current_player = who_first
-    
+
     loop do
       display_board(board)
       place_piece!(board, current_player)
@@ -182,7 +182,7 @@ loop do
       display_board(board)
       break if someone_won?(board) || board_full?(board)
     end
-    
+
     if someone_won?(board)
       prompt "#{detect_winner(board)} won!"
     else
@@ -194,7 +194,7 @@ loop do
     elsif detect_winner(board) == "Computer"
       computer_score += 1
     end
-    
+
     break if player_score == 5 || computer_score == 5
     show_results(player_score, computer_score)
   end
