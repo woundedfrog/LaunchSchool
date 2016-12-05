@@ -13,7 +13,7 @@ end
 
 # rubocop:disable Metrics/MethodLength, Metrics/AbcSize
 def display_board(brd)
-  system 'cls'
+  system 'cls' 
   system 'clear'
   puts "You're a #{PLAYER_MARKER}. Computer is #{COMPUTER_MARKER}."
   puts ""
@@ -145,9 +145,6 @@ def someone_won?(brd)
   !!detect_winner(brd)
 end
 
-player_score = 0
-computer_score = 0
-
 def detect_winner(brd)
   WINNING_LINES.each do |line|
     if brd.values_at(*line).count(PLAYER_MARKER) == 3
@@ -169,22 +166,25 @@ def show_results(player, computer)
 end
 
 loop do
-  board = initialize_board
-  display_board(board)
-  current_player = who_first
-
+    player_score = 0
+    computer_score = 0
+    board = initialize_board
+    display_board(board)
+  
   loop do
+    board = initialize_board
+    current_player = who_first
+    
     loop do
+      display_board(board)
       place_piece!(board, current_player)
       current_player = alternate_player(current_player)
       display_board(board)
       break if someone_won?(board) || board_full?(board)
     end
-    display_board(board)
-
+    
     if someone_won?(board)
       prompt "#{detect_winner(board)} won!"
-#      binding.pry
     else
       prompt "It's a tie!"
     end
@@ -194,6 +194,7 @@ loop do
     elsif detect_winner(board) == "Computer"
       computer_score += 1
     end
+    
     break if player_score == 5 || computer_score == 5
     show_results(player_score, computer_score)
   end
