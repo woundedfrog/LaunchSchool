@@ -65,21 +65,29 @@ def player_places_piece!(brd)
 end
 
 def computer_places_piece!(brd)
-  square = offensive_defensive_move(brd, COMPUTER_MARKER)
-  square = offensive_defensive_move(brd, PLAYER_MARKER) unless square
+  square = offensive_move(brd)
+  square = offensive_move(brd) unless square
   square = advantage_square_five(brd) unless square
   square = empty_squares(brd).sample unless square
 
   brd[square] = COMPUTER_MARKER
 end
 
-def offensive_defensive_move(brd, marker)
+def best_move(brd, marker)
   square = nil
   WINNING_LINES.each do |line|
     square = find_risk_square(line, brd, marker)
     break if square
   end
   square
+end
+
+def offensive_move(brd)
+  best_move(brd, COMPUTER_MARKER)
+end
+
+def defensive_move(brd)
+  best_move(brd, PLAYER_MARKER)
 end
 
 def find_risk_square(line, board, marker)
