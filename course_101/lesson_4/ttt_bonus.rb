@@ -2,10 +2,10 @@ require 'pry'
 
 WINNING_LINES = [[1, 2, 3], [4, 5, 6], [7, 8, 9]] + # rows
                 [[1, 4, 7], [2, 5, 8], [3, 6, 9]] + # cols
-                [[1, 5, 9], [3, 5, 7]] # diagonals
-INITIAL_MARKER = ' '
-PLAYER_MARKER = 'X'
-COMPUTER_MARKER = 'O'
+                [[1, 5, 9], [3, 5, 7]].freeze # diagonals
+INITIAL_MARKER = ' '.freeze
+PLAYER_MARKER = 'X'.freeze
+COMPUTER_MARKER = 'O'.freeze
 
 def prompt(msg)
   puts "=> #{msg}"
@@ -61,8 +61,34 @@ def player_places_piece!(brd)
     break if empty_squares(brd).include?(square)
     prompt "Sorry, that's not a valid choice"
   end
-
   brd[square] = PLAYER_MARKER
+end
+
+def computer_places_piece!(brd)
+  square = offensive_move(brd)
+  square = defensive_move(brd) unless square
+  square = advantage_square_five(brd) unless square
+  square = empty_squares(brd).sample unless square
+
+  brd[square] = COMPUTER_MARKER
+end
+
+def offensive_move(brd)
+  square = nil
+  WINNING_LINES.each do |line|
+    square = find_risk_square(line, brd, COMPUTER_MARKER)
+    break if square
+  end
+  square
+end
+
+def defensive_move(brd)
+  square = nil
+  WINNING_LINES.each do |line|
+    square = find_risk_square(line, brd, PLAYER_MARKER)
+    break if square
+  end
+  square
 end
 
 def find_risk_square(line, board, marker)
@@ -71,38 +97,8 @@ def find_risk_square(line, board, marker)
   end
 end
 
-def key_square(brd)
-  return nil unless brd[5] == INITIAL_MARKER
-  5
-end
-
-def computer_places_piece!(brd)
-  square = nil
-
-  # chooses offensively
-  if !square
-    WINNING_LINES.each do |line|
-      square = find_risk_square(line, brd, COMPUTER_MARKER)
-      break if square
-    end
-  end
-
-  # chooses defensively
-  WINNING_LINES.each do |line|
-    square = find_risk_square(line, brd, PLAYER_MARKER)
-    break if square
-  end
-
-  unless square
-    square = key_square(brd)
-  end
-
-  # picks random square
-  if !square
-    square = empty_squares(brd).sample
-  end
-
-  brd[square] = COMPUTER_MARKER
+def advantage_square_five(brd)
+  5 if brd[5] == INITIAL_MARKER
 end
 
 def who_first
@@ -121,19 +117,19 @@ def who_first
   end
 end
 
-def alternate_player(current_player)
-  if current_player == "Player"
-    "Computer"
-  else
-    "Player"
-  end
-end
-
 def place_piece!(brd, current_player)
   if current_player == "Player"
     player_places_piece!(brd)
   else
     computer_places_piece!(brd)
+  end
+end
+
+def alternate_player(current_player)
+  if current_player == "Player"
+    "Computer"
+  else
+    "Player"
   end
 end
 
@@ -165,23 +161,31 @@ def show_results(player, computer)
   end
 end
 
+def exit_game?
+  answer = ''
+  loop do
+    prompt "Play again? (y or n)"
+    answer = gets.chomp.downcase
+    break if answer == 'y' || answer == 'n'
+    prompt "Please enter valid answer: 'y' or 'n'"
+  end
+  answer
+end
+system 'clear'
 loop do
   player_score = 0
   computer_score = 0
-  board = initialize_board
-  display_board(board)
 
   loop do
     board = initialize_board
     current_player = who_first
-
     loop do
       display_board(board)
       place_piece!(board, current_player)
       current_player = alternate_player(current_player)
-      display_board(board)
       break if someone_won?(board) || board_full?(board)
     end
+    display_board(board)
 
     if someone_won?(board)
       prompt "#{detect_winner(board)} won!"
@@ -195,13 +199,11 @@ loop do
       computer_score += 1
     end
 
-    break if player_score == 5 || computer_score == 5
+    break if player_score == 3 || computer_score == 3
     show_results(player_score, computer_score)
   end
 
-  prompt "Play again? (y or n)"
-  answer = gets.chomp
-  break unless answer.downcase.start_with?('y')
+  break unless exit_game? == 'y'
 end
 
 prompt "Tanks for playing Tic Tac Toe! Bye-Bye!"
