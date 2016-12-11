@@ -188,7 +188,7 @@ loop do
     end
   else
     prompt "Your score is: #{player_score} / Dealer score is: #{dealer_score}"
-    prompt "Press enter to continue"
+    prompt "Press any key to continue"
     gets
   end
 end
