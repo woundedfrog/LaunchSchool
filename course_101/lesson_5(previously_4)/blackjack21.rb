@@ -2,6 +2,8 @@ system "clear"
 
 SUITS = ['♥', '♦', '♠', '♣']
 VALUES = ['2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K', 'A']
+BLACKJACK = 21
+DEALERLIMIT = 17
 
 def prompt(message)
   puts "==>> #{message}"
@@ -19,7 +21,7 @@ def total(cards)
   values.each do |value|
     if value == "A"
       sum += 11
-      if sum > 21
+      if sum > BLACKJACK
         sum -= 10
       end
     elsif value.to_i.zero? #== 0 # J, Q, K  if value == "J", etc
@@ -33,16 +35,16 @@ def total(cards)
 end
 
 def busted?(cards)
-  total(cards) > 21
+  total(cards) > BLACKJACK
 end
 
 def detect_result(dealer_cards, player_cards)
   player_total = total(player_cards)
   dealer_total = total(dealer_cards)
 
-  if player_total > 21
+  if player_total > BLACKJACK
     :player_busted
-  elsif dealer_total > 21
+  elsif dealer_total > BLACKJACK
     :dealer_busted
   elsif dealer_total < player_total
     :player
@@ -147,7 +149,7 @@ loop do
   prompt "Dealer turn..."
 
   loop do
-    break if busted?(dealer_cards) || total(dealer_cards) >= 17
+    break if busted?(dealer_cards) || total(dealer_cards) >= DEALERLIMIT
 
     prompt "Dealer hits!"
     dealer_cards << deck.pop
