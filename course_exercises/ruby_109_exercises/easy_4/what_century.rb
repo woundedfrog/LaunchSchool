@@ -26,8 +26,3 @@ puts century(1052) == '11th'
 puts century(1127) == '12th'
 puts century(11201) == '113th'
 
-#if num.to_s[-3..-1].to_i == 0
-#   p num.to_s[0..1] + 'th' if num.to_s[0..1].to_i > 3
-# else
-#   p (num.to_s[0..1].to_i + 1).to_s + 'th' if num.to_s[0..1].to_i > 3 && num.to_s.size > 3
-# end

@@ -1,4 +1,4 @@
-CONST = {
+NUMBERS = {
   '1' => 1,
   '2' => 2,
   '3' => 3,
@@ -12,11 +12,13 @@ CONST = {
   }
 
 def string_to_integer(str)
-  digit = str.chars.map do |char|
-    CONST[char]
+  digit = str.chars.map do |character|
+    NUMBERS[character]
   end
   number = 0
-  digit.each { |digit| number = 10 * number + digit }
+  digit.each do |num|
+    number = 10 * number + num
+  end
   number
 end
 
