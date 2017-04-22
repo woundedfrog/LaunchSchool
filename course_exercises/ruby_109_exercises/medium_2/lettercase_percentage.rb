@@ -1,10 +1,9 @@
 def letter_percentages(str)
   percent = {}
-  str.chars.each do |x|
-    percent[:lowercase] = (str.scan(/[a-z]/).count.to_f) / str.length * 100
-    percent[:uppercase] = (str.scan(/[A-Z]/).count.to_f) / str.length * 100
-    percent[:neither] = (str.scan(/[^a-zA-Z]/).count.to_f) / str.length * 100
-  end
+
+  percent[:lowercase] = (str.scan(/[a-z]/).count.to_f) / str.length * 100
+  percent[:uppercase] = (str.scan(/[A-Z]/).count.to_f) / str.length * 100
+  percent[:neither] = (str.scan(/[^a-zA-Z]/).count.to_f) / str.length * 100
 
   percent
 end
