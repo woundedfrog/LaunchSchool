@@ -1,0 +1,16 @@
+QUESTION:
+
+What is the return value of the select method below? Why?
+
+
+[1, 2, 3].select do |num|
+  num > 5
+  'hi'
+end
+
+
+ANSWER:
+# `select` method only cares about the truthiness of the return value in the block.
+#'hi' is a `truthy` value and is the last line of code in the block, the select method will select every element in the original array.
+
+

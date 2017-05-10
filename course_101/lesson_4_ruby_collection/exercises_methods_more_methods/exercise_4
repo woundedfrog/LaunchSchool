@@ -1,0 +1,16 @@
+QUESTIOn:
+
+What is the return value of each_with_object in the following code? Why?
+
+['ant', 'bear', 'cat'].each_with_object({}) do |value, hash|
+  hash[value[0]] = value
+end
+
+ANSWER:
+
+=> { "a" => "ant", "b" => "bear", "c" => "cat" }
+
+`eatch_with_object` takes in an object as an argument.
+This argument is passed into the block and is returned at the end of each itteration. The object is modified within the block.
+Thus when the iteration over the calling collection ends, the modified object is returned.
+

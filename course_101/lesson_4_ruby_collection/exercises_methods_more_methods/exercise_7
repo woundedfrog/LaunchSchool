@@ -1,0 +1,20 @@
+QUESTION:
+
+What is the block's return value in the following code? How is it determined? Also, what is the return value of any? in this code. What gets output by this code?
+
+[1, 2, 3].any? do |num|
+  puts num
+  num.odd?
+end
+
+
+ANSWER:
+The returned value is 'true'.
+
+1) The block's return value is deterimined by the last expression in the block. e.g. `num.odd?` , which is returning a boolean value.
+2) .odd? can only return 'true' or 'false'
+
+3) #.any? is asking if any of the elements evaluates to 'true'. So, because the first expression returns true/evaluates to true for the first element in the interation. 
+.any? stops iteration as soon as it finds the first element that evaluates to true inside the block.
+
+

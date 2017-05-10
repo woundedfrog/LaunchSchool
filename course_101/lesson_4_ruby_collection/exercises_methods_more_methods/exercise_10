@@ -1,0 +1,21 @@
+QUESTION:
+What is the block's return value in the following code? Why?
+
+[1, 2, 3].map do |num|
+  if num > 1
+    puts num
+  else
+    num
+  end
+end
+
+
+ANSWER:
+
+The return value is: 
+ => [1, nil, nil]
+ 
+ This is because on the first iteration, the else condition is met and the `num` is returned, which is `1`.
+ The second and third(last) iterations `nil` is returned because the `if` condition is met. 
+ Inside the if clause, we find `puts num`. This will print the number, but will return nil. PUTS always returns nil.
+ 

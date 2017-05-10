@@ -1,0 +1,14 @@
+QUESTION:
+
+How does take work? Is it destructive? How can we find out?
+
+arr = [1, 2, 3, 4, 5]
+arr.take(2)
+
+
+ANSWER:
+
+`#.take` takes the first specified `n` number of elements from an array and returns them.
+It's not destructive.
+We can check if it's destructive in IRB or in the Ruby documentation.
+

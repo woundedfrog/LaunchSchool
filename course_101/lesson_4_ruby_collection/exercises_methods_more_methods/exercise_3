@@ -1,0 +1,11 @@
+QUESTION:
+What is the return value of reject in the following code? Why?
+
+[1, 2, 3].reject do |num|
+  puts num
+end
+
+ANSWER:
+
+#reject checks the return value of the block. If the block returns true, the item is not selected. In this code example, `puts num` has a return value of 'ni'. 
+NIL is a falsy value, so the elements are selected.

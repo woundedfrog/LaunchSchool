@@ -1,0 +1,15 @@
+QUESTION:
+
+What is the return value of the following statement? Why?
+
+['ant', 'bear', 'caterpillar'].pop.size
+
+ANSWER:
+
+=> 11
+
+'11' is returned because the `pop` method that's called on the array removes the last element from that array and returns it. 
+Then the .size is called on that returned value and returns 11.
+
+pop => returns 'caterpillar'
+.size => return `11`, because caterpillar is 11 characters long.
