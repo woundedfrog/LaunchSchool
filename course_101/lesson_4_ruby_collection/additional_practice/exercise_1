@@ -1,0 +1,12 @@
+QUESTION:
+Given the array below
+
+flintstones = ["Fred", "Barney", "Wilma", "Betty", "Pebbles", "BamBam"]
+
+ANSwer:
+
+stones_hash = {}
+flintstones.each_with_index do |v,i|
+  stones_hash[v] = i
+end
+
