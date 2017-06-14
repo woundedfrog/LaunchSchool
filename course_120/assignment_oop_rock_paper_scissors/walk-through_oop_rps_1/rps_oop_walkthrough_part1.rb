@@ -1,34 +1,5 @@
-#Here is the basic form/outline we have so far of the RPS game.
-#There is a lot of unknowns at this point, such as the need for 'rule' and 'move' classes.
+#Basic RPS game
 
-
-class Player
-  def initialize
-    # maybe a "name"? what about a "move"?
-  end
-
-  def choose
-
-  end
-end
-
-class Move
-  def initialize
-    # seems like we need something to keep track
-    # of the choice... a move object can be "paper", "rock" or "scissors"
-  end
-end
-
-class Rule
-  def initialize
-    # not sure what the "state" of a rule object should be
-  end
-end
-
-# not sure where "compare" goes yet
-def compare(move1, move2)
-
-end
 
 class Player
   attr_accessor :move, :name
