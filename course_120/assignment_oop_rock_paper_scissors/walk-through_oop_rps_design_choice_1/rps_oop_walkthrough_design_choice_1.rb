@@ -3,44 +3,42 @@
 class Player
   attr_accessor :move, :name
 
-  def initialize(player_type = :human)  #we have a default value set to human incase nothing is passed in.
-    @player_type = player_type
-    @move = nil
-    set_name  #when the player object is instantiated, this method is called.
+  def initialize
+    set_name  #when the player(computer or human class is called) object is instantiated, this method is called as soon as the initialize method is initialized.
   end
+end
 
+class Human < Player
   def set_name
-    if human?
-      n = nil
-      loop do
-        puts "What's your name?"
-        n = gets.chomp  #this 'n' is a local VAR. A setter method needs to be invoked with a 'self.'
-        break unless n.empty?
-        puts "Sorry, that's not a valid input!"
-      end
-      self.name = n
-    else
-      self.name = ["R2D2","Hal", "Mr.Bigglesworth", "Timmy"].sample
+    n = nil
+    loop do
+      puts "What's your name?"
+      n = gets.chomp  #this 'n' is a local VAR. A setter method needs to be invoked with a 'self.'
+      break unless n.empty?
+      puts "Sorry, that's not a valid input!"
     end
+    self.name = n
   end
 
   def choose
-    if human?
-      choice = nil
-      loop do
-        puts "Please choose rock, paper, scissors:"
-        choice = gets.chomp.downcase
-        break if  ['rock','paper','scissors'].include?(choice)
-        puts "Sorry, invalid choice!"
-      end
-      self.move = choice
-    else
-      self.move = ['rock','paper','scissors'].sample
+    choice = nil
+    loop do
+      puts "Please choose rock, paper, scissors:"
+      choice = gets.chomp.downcase
+      break if  ['rock','paper','scissors'].include?(choice)
+      puts "Sorry, invalid choice!"
     end
+    self.move = choice
+  end
+end
+
+class Computer < Player
+  def set_name
+    self.name = ["R2D2","Hal", "Mr.Bigglesworth", "Timmy"].sample
   end
 
-  def human?
-    @player_type == :human
+  def choose
+    self.move = ['rock','paper','scissors'].sample
   end
 end
 
@@ -48,8 +46,8 @@ class RPSGame
   attr_accessor :human, :computer
 
   def initialize
-    @human = Player.new
-    @computer = Player.new(:computer)  #When instantiating a new object(which is assigned to the instance variable) we pass in the computer as an argument to the player class.
+    @human = Human.new
+    @computer = Computer.new 
   end
 
   def display_welcome_message
