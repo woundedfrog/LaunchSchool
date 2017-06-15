@@ -1,10 +1,21 @@
 #Refactoring the RPS OOP game
 
+#Compare this design with the one in the previous assignment:
+#
+#1)Is this design, with Human and Computer sub-classes, better? Why, or why not?
+#Yes, it is better, because it makes reading the code easier. Since each player is now set to it's own class, it' follows a better hierarchy.
+#2)what is the primary improvement of this new design?
+#I think the primary improvements of this design are:
+  #a) A better hierarchy and properly creating classes for the main areas of our game.
+  #b) It is much easier to follow and read the code.
+#3)what is the primary drawback of this new design?
+  #None that I can see, in my limited knowledge
+
 class Player
   attr_accessor :move, :name
 
   def initialize
-    set_name  #when the player(computer or human class is called) object is instantiated, this method is called as soon as the initialize method is initialized.
+    set_name  #when the player(computer or human class is called) object is instantiated, this method is called as soon as the constructor method is initialized.
   end
 end
 
@@ -95,7 +106,7 @@ class RPSGame
     display_welcome_message
 
     loop do
-      human.choose
+      human.choose  #class instance method "choose". human is refering to the getter method, which refrences the instance method 'human'. It's value is an object of the Human class.
       computer.choose
       display_winner
       break unless play_again?
