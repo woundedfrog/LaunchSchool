@@ -1,3 +1,9 @@
+#Privacy
+#
+#Consider the following class:
+#Modify this class so both flip_switch and the setter method switch= are private method
+
+
 class Machine
 
   def start
