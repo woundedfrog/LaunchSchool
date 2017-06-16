@@ -22,91 +22,168 @@
 #iterate over each word/digit and call the element on the instantiated object.
 #  e.g.
 
-class Minilang
 
-  attr_accessor :token, :register, :stack, :string
+#REQUIRED VERSION:
+require 'set'
+
+class MinilangRuntimeError < RuntimeError; end
+class BadTokenError < MinilangRuntimeError; end
+class EmptyStackError < MinilangRuntimeError; end
+
+class Minilang
+  ACTIONS = Set.new %w(PUSH ADD SUB MULT DIV MOD POP PRINT)
 
   def initialize(string)
     @string = string
-    @token = nil
     @register = 0
     @stack = []
   end
 
   def eval  #when this method is called, it iterates over each word, calling the respective methods.
-    string.split(" ").each do |element|
-      @token = element  #assigning the token
-      case element
-      when "PRINT"
-        to_s()  #has to print out the register
-      when "PUSH"
-        push_num()       
-      when "ADD"
-        addition()
-      when "SUB"
-        subtract()
-      when "MULT"
-        multiply()
-      when "POP"
-        pop_from_stack()
-      when "MOD"
-        mod_value()
-      when "DIV"
-        divide()
-      else
-        if element.to_i.to_s == element
-          n(@token) #assigns to register
-        else
-          puts "Invalid token #{element}"
-          return
-        end
-      end
-    end
+    @string.split.each { |token| evaluate_token(token) }
+  rescue MinilangRuntimeError => error
+    puts error.message
   end
 
+  private
+
+  def evaluate_token(token)
+    if ACTIONS.include?(token)
+      send(token.downcase)
+    elsif token =~ /\A[-+]?\d+\z/
+      @register = token.to_i
+    else
+      raise BadTokenError, "Invalid token: #{token}"
+    end
+  end
+  
   def n(num)
     @register = num.to_i
   end
 
-  def push_num
+  def push
     @stack << @register 
   end
 
-  def multiply
-    @register *= @stack.pop
+  def mult
+    @register *= pop
   end
 
-  def subtract
-    @register -= @stack.pop  
+  def sub
+    @register -= pop  
   end
 
-  def pop_from_stack
+  def pop
+    raise EmptyStackError, "Empty stack!" if @stack.empty?
     @register = @stack.pop
-    if @register.nil?
-     @register = error_report(@register)
-    end
   end
 
-  def mod_value
-    @register %= @stack.pop
+  def mod
+    @register %= pop
   end
 
-  def divide
-    @register /= @stack.pop
+  def div
+    @register /= pop
   end
 
-  def addition
-    @register += @stack.pop
+  def add
+    @register += pop
   end
 
   def error_report(error_token)
     "Empty stack!"
   end
 
-  def to_s
-    puts @register.nil? ? 'The value is 0' : "The value is #{@register}"   #needs to pring to_s
+  def print
+    puts @register
   end
 end
+#CASE STATEMENT VERSION:
+#class Minilang
+#
+#  attr_accessor :token, :register, :stack, :string
+#
+#  def initialize(string)
+#    @string = string
+#    @token = nil
+#    @register = 0
+#    @stack = []
+#  end
+#
+#  def eval  #when this method is called, it iterates over each word, calling the respective methods.
+#    string.split(" ").each do |element|
+#      @token = element  #assigning the token
+#      case element
+#      when "PRINT"
+#        to_s()  #has to print out the register
+#      when "PUSH"
+#        push_num()       
+#      when "ADD"
+#        addition()
+#      when "SUB"
+#        subtract()
+#      when "MULT"
+#        multiply()
+#      when "POP"
+#        pop_from_stack()
+#      when "MOD"
+#        mod_value()
+#      when "DIV"
+#        divide()
+#      else
+#        if element.to_i.to_s == element
+#          n(@token) #assigns to register
+#        else
+#          puts "Invalid token #{element}"
+#          return
+#        end
+#      end
+#    end
+#  end
+#
+#  def n(num)
+#    @register = num.to_i
+#  end
+#
+#  def push_num
+#    @stack << @register 
+#  end
+#
+#  def multiply
+#    @register *= @stack.pop
+#  end
+#
+#  def subtract
+#    @register -= @stack.pop  
+#  end
+#
+#  def pop_from_stack
+#    @register = @stack.pop
+#    if @register.nil?
+#     @register = error_report(@register)
+#    end
+#  end
+#
+#  def mod_value
+#    @register %= @stack.pop
+#  end
+#
+#  def divide
+#    @register /= @stack.pop
+#  end
+#
+#  def addition
+#    @register += @stack.pop
+#  end
+#
+#  def error_report(error_token)
+#    "Empty stack!"
+#  end
+#
+#  def to_s
+#    puts @register.nil? ? 'The value is 0' : "The value is #{@register}"   #needs to pring to_s
+#  end
+#end
 
 #Minilang.new('5 PRINT PUSH 3 PRINT ADD PRINT')#.eval
 #string = '5 PRINT PUSH 3 PRINT ADD PRINT'
