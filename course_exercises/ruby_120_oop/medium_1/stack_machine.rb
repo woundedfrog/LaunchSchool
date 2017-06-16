@@ -29,7 +29,7 @@ class Minilang
   def initialize(string)
     @string = string
     @token = nil
-    @register = nil
+    @register = 0
     @stack = []
   end
 
