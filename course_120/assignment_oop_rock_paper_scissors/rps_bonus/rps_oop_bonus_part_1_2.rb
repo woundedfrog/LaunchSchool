@@ -1,33 +1,61 @@
 class Move
-  VALUES = ['rock', 'paper', 'scissors']
+  VALUES = ['rock', 'paper', 'scissors', 'lizard', 'spock']
+
+  COMBOS = {
+    'rock' => %w(scissors lizard),
+    'paper' => %w(rock spock),
+    'scissors' => %w(paper lizard),
+    'lizard' => %w(spock paper),
+    'spock' => %w(rock scissors)
+    }
+
+  attr_reader :value
 
   def initialize(value)
     @value = value
   end
 
-  def scissors?
-    @value == "scissors"
-  end
+  #def scissors?
+  #  @value == "scissors"
+  #end
+  #
+  #def rock?
+  #  @value == "rock"
+  #end
+  #
+  #def paper?
+  #  @value == "paper"
+  #end
+  #
+  #def lizard?
+  #  @value == "lizard"
+  #end
+  #
+  #def spock?
+  #  @value == "spock"
+  #end
 
-  def rock?
-    @value == "rock"
-  end
-
-  def paper?
-    @value == "paper"
-  end
+  #def >(other_move)
+  #  (rock? && other_move.scissors?) ||
+  #    (rock? && other_move.lizard?) ||
+  #    (paper? && other_move.spock?) ||
+  #    (paper? && other_move.rock?) ||
+  #    (scissors? && other_move.lizard?) ||
+  #    (scissors? && other_move.paper?) ||
+  #    (spock? && other_move.rock?) ||
+  #    (spock? && other_move.scissors?) ||
+  #    (lizard? && other_move.spock?) ||
+  #    (lizard? && other_move.paper?)
+  #end
 
   def >(other_move)
-    (rock? && other_move.scissors?) ||
-      (paper? && other_move.rock?) ||
-      (scissors? && other_move.paper?)
+    # other_move.value is allowing us to read the move value
+    COMBOS[@value].include?(other_move.value)  # with this the above methods are not needed.
   end
-
-  def <(other_move)
-    (rock? && other_move.paper?) ||
-      (paper? && other_move.scissors?) ||
-      (scissors? && other_move.rock?)
-  end
+  #
+  #def <(other_move) # not needed
+  #  COMBOS[other_move.value].include?(@value)
+  #end
 
   def to_s
     @value
@@ -112,7 +140,7 @@ class RPSGame
       human.increment_score
       puts "#{human.name} won #{human.player_score}/#{@win_limit} games!".center(80)
       puts "#{computer.name} won #{computer.player_score}/#{@win_limit} rounds!".center(80)
-    elsif human.move < computer.move
+    elsif computer.move > human.move
       computer.increment_score
       puts "#{human.name} won #{human.player_score}/#{@win_limit} games!".center(80)
       puts "#{computer.name} won #{computer.player_score}/#{@win_limit} rounds!".center(80)
@@ -120,7 +148,7 @@ class RPSGame
       puts "It's a tie!".center(80)
     end
   end
-  
+
   def game_winner!
     if human.player_score > computer.player_score
       puts "You beat the computer. GREAT!"
@@ -130,7 +158,7 @@ class RPSGame
     human.player_score = 0
     computer.player_score = 0
   end
-  
+
   def play_again?
     answer = nil
     loop do
