@@ -34,35 +34,30 @@ class Move
 end
 
 class MoveHistory
-  attr_accessor :move_history, :game_history
-  attr_reader :winning_hands
+  attr_accessor :move_options, :player_history, :current_game_history
 
   def initialize
-    @game_history = {'rock' => 1, 'paper' => 1, 'scissors' => 1, 'spock' => 1, 'lizard' => 1}
-    @move_history = []
-    @winning_hands = []
+    @player_history = {'rock' => 0, 'paper' => 0, 'scissors' => 0, 'lizard' => 0, 'spock' => 0}
+    @current_game_history = {'rock' => 1, 'paper' => 1, 'scissors' => 1, 'lizard' => 1, 'spock' => 1}
+    @move_options = ['rock', 'paper', 'scissors', 'lizard', 'spock']
   end
 
   def update_history(move)
-    @game_history[move] += 1
-    formated_history
+    @player_history[move] += 1
+    @current_game_history[move] += 1
   end
 
-  def formated_history
+  def update_win(move)
     new_history = []
-    @game_history.each do |hand,weight|
+    @current_game_history.each do |hand,weight|
       new_history << [hand] * weight
     end
-    @move_history = new_history.flatten.sort
+    @move_options = new_history.flatten.sort
   end
 
   def new_history
     new_history = []
-    @move_history << new_history  
-  end
-
-  def win_history(move)
-    @winning_hands << move
+    @move_options << new_history  
   end
 
   def to_s
@@ -114,8 +109,8 @@ class Computer < Player
     self.name = ["R2D2", "Hal", "Mr.Bigglesworth", "Timmy"].sample
   end
 
-  def choose(history_options, win_history)
-    best_move = history_options.sample
+  def choose(move_options)
+    best_move = move_options.sample
     self.move = Move.new(Move::WIN_COMBOS[best_move].sample)
     @pl_history.update_history(self.move.value)
   end
@@ -132,14 +127,17 @@ class GameMessages
   end
 
   def display_moves
-    puts "#{human.name} chose #{human.move}."
-    puts "#{computer.name} chose #{computer.move}."
+    puts ""
+    puts "+---#{human.name} chose #{human.move}.---+".center(80)
+    puts "+---#{computer.name} chose #{computer.move}.---+".center(80)
+    puts ""
   end
 
   def display_round_winner
+    human.pl_history.update_win(human.move.value)
+
     if human.move > computer.move
       human.increment_score
-      human.pl_history.win_history(human.move)
       puts "#{human.name} won #{human.player_score}/#{@win_limit} games!".center(80)
       puts "#{computer.name} won #{computer.player_score}/#{@win_limit} rounds!".center(80)
     elsif computer.move > human.move
@@ -149,14 +147,14 @@ class GameMessages
     else
       puts "It's a tie!".center(80)
     end
-    #puts "#{human.pl_history.winning_hands} : #{computer.pl_history.move_history}" #used for testing only
+    #puts "#{human.pl_history.current_game_history} : #{human.pl_history.move_options}" #used for testing only
   end
 
   def game_winner!
     if human.player_score > computer.player_score
-      puts "You beat the computer. GREAT!"
+      puts "You beat the computer. GREAT!".center(80)
     else
-      puts "The computer won! LOSER!"
+      puts "The computer won! LOSER!".center(80)
     end
     human.player_score = 0
     computer.player_score = 0
@@ -167,12 +165,12 @@ class UserPrompts < GameMessages
   def play_again?
     answer = nil
     loop do
-      puts "We've reached the end of the game. Would you like to play again? (y/n)"
+      puts "We've reached the end of the game. Would you like to play again? (y/n)".center(80)
       answer = gets.chomp
       break if ['y', 'n'].include?(answer.downcase)
       puts "Sorry, input must be 'y' or 'n'"
     end
-
+    system 'clear'
     answer.downcase == 'y' # this returns true or false automatically
   end
 
@@ -206,14 +204,15 @@ class RPSGame < UserPrompts
     loop do
       round_counter += 1
       puts "Round #{round_counter}"
+      computer.choose(human.pl_history.move_options)
       human.choose
-      computer.choose(human.pl_history.move_history, human.pl_history.winning_hands)
       display_moves
       display_round_winner
       if (human.player_score >= @win_limit || computer.player_score >= @win_limit)
         game_winner!
         break unless play_again?
         round_counter = 0
+        choose_win_limit
       end    
     end
     display_goodbye_message
