@@ -1,3 +1,5 @@
+require 'pry'
+
 class Move
   VALUES = ['rock', 'paper', 'scissors', 'lizard', 'spock']
 
@@ -25,18 +27,33 @@ class Move
 end
 
 class MoveHistory
-  attr_accessor :move_history
-  
+  attr_accessor :move_history, :game_history
+
   def initialize
-    @move_history = Hash.new(0)
+    @game_history = Hash.new(0)
+    @move_history = []
   end
 
   def update_history(move)
-    move_history[move] += 1
+    @game_history[move] += 1
+    formated_history
   end
-  
+
   def formated_history
-    
+   new_history = []
+    @game_history.each do |hand,weight|
+      new_history << [hand] * weight
+    end
+    @move_history = new_history.flatten.sort
+  end
+
+  def new_history
+    new_history = []
+    @move_history << new_history  
+  end
+
+  def to_s
+    @move_history
   end
 end
 
@@ -45,7 +62,7 @@ class Player
 
   def initialize
     set_name
-    @history = MoveHistory.new.move_history #returns a HASH
+    @history = MoveHistory.new#.move_history #returns a HASH
     @player_score = 0
   end
 
@@ -75,6 +92,8 @@ class Human < Player
       puts "Sorry, invalid choice!"
     end
     self.move = Move.new(choice)
+    @history.update_history(self.move.value)
+    p @history.move_history
   end
 end
 
@@ -85,6 +104,7 @@ class Computer < Player
 
   def choose
     self.move = Move.new(Move::VALUES.sample)
+    @history.update_history(self.move.value)
   end
 end
 
@@ -101,9 +121,11 @@ class GameMessages
   def display_moves
     puts "#{human.name} chose #{human.move}."
     puts "#{computer.name} chose #{computer.move}."
+    #binding.pry
   end
 
   def display_round_winner
+    puts "#{human.history.move_history} : #{computer.history.move_history}"
     if human.move > computer.move
       human.increment_score
       puts "#{human.name} won #{human.player_score}/#{@win_limit} games!".center(80)
@@ -185,5 +207,5 @@ class RPSGame < UserPrompts
   end
 end
 
-#RPSGame.new.play
-x = RPSGame.new
+RPSGame.new.play
+#x = RPSGame.new
