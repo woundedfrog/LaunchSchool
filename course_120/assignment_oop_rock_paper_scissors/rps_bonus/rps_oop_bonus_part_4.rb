@@ -24,11 +24,28 @@ class Move
   end
 end
 
+class MoveHistory
+  attr_accessor :move_history
+  
+  def initialize
+    @move_history = Hash.new(0)
+  end
+
+  def update_history(move)
+    move_history[move] += 1
+  end
+  
+  def formated_history
+    
+  end
+end
+
 class Player
-  attr_accessor :move, :name, :player_score
+  attr_accessor :move, :name, :player_score, :history
 
   def initialize
     set_name
+    @history = MoveHistory.new.move_history #returns a HASH
     @player_score = 0
   end
 
@@ -71,16 +88,7 @@ class Computer < Player
   end
 end
 
-class RPSGame
-  attr_accessor :human, :computer
-
-  def initialize
-    system 'clear'
-    @human = Human.new
-    @computer = Computer.new
-    @win_limit = 0
-  end
-
+class GameMessages
   def display_welcome_message
     system 'clear'
     puts "Hello, #{human.name}! Welcome to Rock Paper Scissors!"
@@ -118,7 +126,9 @@ class RPSGame
     human.player_score = 0
     computer.player_score = 0
   end
+end
 
+class UserPrompts < GameMessages
   def play_again?
     answer = nil
     loop do
@@ -131,8 +141,8 @@ class RPSGame
     answer.downcase == 'y' # this returns true or false automatically
   end
 
-  def game_win_limit?
-    puts "Please choose the number of wins necessary to win - (1~10)."
+  def choose_win_limit
+    puts "Please choose a winnings score - (1~10)."
     loop do
       @win_limit = gets.chomp.to_i
       break if @win_limit > 0
@@ -141,27 +151,39 @@ class RPSGame
     system 'clear'
     puts "Thank you! Let's start."
   end
+end
+
+class RPSGame < UserPrompts
+  attr_accessor :human, :computer
+
+  def initialize
+    system 'clear'
+    @human = Human.new
+    @computer = Computer.new
+    @win_limit = 0
+  end
 
   def play
     display_welcome_message
-    game_win_limit?
+    choose_win_limit
     round_counter = 0
 
     loop do
       round_counter += 1
       puts "Round #{round_counter}"
-      human.choose # class instance method "choose".
+      human.choose
       computer.choose
       display_moves
       display_round_winner
-      if (human.player_score >= @win_limit || computer.player_score >= @win_limit)  #checks if a player reached necessary wins
-        game_winner! #prints out winner message
-        break unless play_again?  #breaks if answer is no
-        round_counter = 0 #reset round counter
+      if (human.player_score >= @win_limit || computer.player_score >= @win_limit)
+        game_winner!
+        break unless play_again?
+        round_counter = 0
       end    
     end
     display_goodbye_message
   end
 end
 
-RPSGame.new.play
+#RPSGame.new.play
+x = RPSGame.new
