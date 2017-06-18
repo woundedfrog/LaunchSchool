@@ -10,6 +10,13 @@ class Move
     'lizard' => %w(spock paper),
     'spock' => %w(rock scissors)
     }
+  WIN_COMBOS = {
+    'rock' => %w(spock paper),
+    'paper' => %w(lizard scissors),
+    'scissors' => %w(rock spock),
+    'lizard' => %w(rock scissors),
+    'spock' => %w(paper lizard)
+    }
 
   attr_reader :value
 
@@ -30,7 +37,7 @@ class MoveHistory
   attr_accessor :move_history, :game_history
 
   def initialize
-    @game_history = Hash.new(0)
+    @game_history = {'rock' => 1, 'paper' => 1, 'scissors' => 1, 'spock' => 1, 'lizard' => 1}
     @move_history = []
   end
 
@@ -40,7 +47,7 @@ class MoveHistory
   end
 
   def formated_history
-   new_history = []
+    new_history = []
     @game_history.each do |hand,weight|
       new_history << [hand] * weight
     end
@@ -58,11 +65,11 @@ class MoveHistory
 end
 
 class Player
-  attr_accessor :move, :name, :player_score, :history
+  attr_accessor :move, :name, :player_score, :pl_history
 
   def initialize
     set_name
-    @history = MoveHistory.new#.move_history #returns a HASH
+    @pl_history = MoveHistory.new
     @player_score = 0
   end
 
@@ -92,8 +99,8 @@ class Human < Player
       puts "Sorry, invalid choice!"
     end
     self.move = Move.new(choice)
-    @history.update_history(self.move.value)
-    p @history.move_history
+    @pl_history.update_history(self.move.value)
+    @pl_history.move_history
   end
 end
 
@@ -102,9 +109,11 @@ class Computer < Player
     self.name = ["R2D2", "Hal", "Mr.Bigglesworth", "Timmy"].sample
   end
 
-  def choose
-    self.move = Move.new(Move::VALUES.sample)
-    @history.update_history(self.move.value)
+  def choose(move_options)
+    best_move = move_options.sample
+    #self.move = Move.new(Move::VALUES.sample)
+    self.move = Move.new(Move::WIN_COMBOS[best_move].sample)
+    @pl_history.update_history(self.move.value)
   end
 end
 
@@ -121,12 +130,11 @@ class GameMessages
   def display_moves
     puts "#{human.name} chose #{human.move}."
     puts "#{computer.name} chose #{computer.move}."
-    #binding.pry
   end
 
   def display_round_winner
-    puts "#{human.history.move_history} : #{computer.history.move_history}"
-    if human.move > computer.move
+    #puts "#{human.pl_history.move_history} : #{computer.pl_history.move_history}" #used for testing only
+     if human.move > computer.move
       human.increment_score
       puts "#{human.name} won #{human.player_score}/#{@win_limit} games!".center(80)
       puts "#{computer.name} won #{computer.player_score}/#{@win_limit} rounds!".center(80)
@@ -194,7 +202,7 @@ class RPSGame < UserPrompts
       round_counter += 1
       puts "Round #{round_counter}"
       human.choose
-      computer.choose
+      computer.choose(human.pl_history.move_history)
       display_moves
       display_round_winner
       if (human.player_score >= @win_limit || computer.player_score >= @win_limit)
