@@ -34,11 +34,12 @@ class Move
 end
 
 class MoveHistory
-  attr_accessor :move_history, :game_history
+  attr_accessor :move_history, :game_history, :winning_hands
 
   def initialize
     @game_history = {'rock' => 1, 'paper' => 1, 'scissors' => 1, 'spock' => 1, 'lizard' => 1}
     @move_history = []
+    @winning_hands = []
   end
 
   def update_history(move)
@@ -57,6 +58,10 @@ class MoveHistory
   def new_history
     new_history = []
     @move_history << new_history  
+  end
+
+  def win_history(move)
+    @winning_hands << move
   end
 
   def to_s
@@ -100,7 +105,6 @@ class Human < Player
     end
     self.move = Move.new(choice)
     @pl_history.update_history(self.move.value)
-    @pl_history.move_history
   end
 end
 
@@ -109,9 +113,8 @@ class Computer < Player
     self.name = ["R2D2", "Hal", "Mr.Bigglesworth", "Timmy"].sample
   end
 
-  def choose(move_options)
-    best_move = move_options.sample
-    #self.move = Move.new(Move::VALUES.sample)
+  def choose(history_options, win_history)
+    best_move = history_options.sample
     self.move = Move.new(Move::WIN_COMBOS[best_move].sample)
     @pl_history.update_history(self.move.value)
   end
@@ -134,8 +137,9 @@ class GameMessages
 
   def display_round_winner
     #puts "#{human.pl_history.move_history} : #{computer.pl_history.move_history}" #used for testing only
-     if human.move > computer.move
+    if human.move > computer.move
       human.increment_score
+      @pl_history.win_history(move)
       puts "#{human.name} won #{human.player_score}/#{@win_limit} games!".center(80)
       puts "#{computer.name} won #{computer.player_score}/#{@win_limit} rounds!".center(80)
     elsif computer.move > human.move
@@ -202,7 +206,7 @@ class RPSGame < UserPrompts
       round_counter += 1
       puts "Round #{round_counter}"
       human.choose
-      computer.choose(human.pl_history.move_history)
+      computer.choose(human.pl_history.move_history, human.pl_history.winning_hands)
       display_moves
       display_round_winner
       if (human.player_score >= @win_limit || computer.player_score >= @win_limit)
