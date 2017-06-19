@@ -114,7 +114,7 @@ class Computer < Player
     self.name = ["R2D2", "Hal", "Mr.Bigglesworth", "Timmy"].sample
   end
 
-  def choose(history_options, win_history)
+  def choose(history_options)
     best_move = history_options.sample
     self.move = Move.new(Move::WIN_COMBOS[best_move].sample)
     @pl_history.update_history(self.move.value)
@@ -207,7 +207,7 @@ class RPSGame < UserPrompts
       round_counter += 1
       puts "Round #{round_counter}"
       human.choose
-      computer.choose(human.pl_history.move_history, human.pl_history.winning_hands)
+      computer.choose(human.pl_history.move_history)
       display_moves
       display_round_winner
       if (human.player_score >= @win_limit || computer.player_score >= @win_limit)
