@@ -64,7 +64,8 @@ module MoveHistory
 
   # def initialize
   #   @player_history = []
-  #   @current_game_history = {'rock' => 0, 'paper' => 0, 'scissors' => 0, 'lizard' => 0, 'spock' => 0}
+  #   @current_game_history = {'rock' => 0, 'paper' => 0,
+  # 'scissors' => 0, 'lizard' => 0, 'spock' => 0}
   #   @move_options = ["rock", "paper", "scissors", "spock", "lizard"]
   # end
 
@@ -73,15 +74,18 @@ module MoveHistory
     @current_game_history[move] += 1
   end
 
-  def update_win(move, computer_name)
+  def update_win(move, comp_n)
     new_hist = []
-      @current_game_history.each do |hand, _|
-        if move == hand
-          computer_name == "Mr. Bigglesworth" ? new_hist << [hand] * 3 : new_hist << [hand] * 4
+    @current_game_history.each do |hand, _|
+      new_hist <<
+        if move == hand && comp_n == "Mr. Bigglesworth"
+          [hand] * 3
+        elsif move == hand
+          [hand] * 4
         else
-          new_hist << [hand] * 1
+          [hand] * 1
         end
-      end
+    end
     (@move_options << new_hist).flatten!.sort!
   end
 
@@ -188,7 +192,7 @@ class Computer < Player
     when 1 then Easy.new
     when 2 then Medium.new
     when 3 then Difficult.new
-    when 4 then [Random.new, Difficult.new, Medium.new, Easy.new].sample
+    when 4 then [Difficult.new, Medium.new, Easy.new].sample
     end
   end
 end
@@ -227,7 +231,7 @@ class Difficult < Computer
   end
 end
 
-class GameMessages
+module GameMessages
   CONSOLE_WIDTH = 80
 
   def format_message(*message)
@@ -249,7 +253,7 @@ class GameMessages
   end
 
   def display_goodbye_message
-    puts "Thank you for playing Rock paper Scissors!"
+    puts "Thank you for playing Rock paper Scissors Lizard and Spock!"
   end
 
   def display_moves
@@ -282,6 +286,18 @@ class GameMessages
     puts ""
   end
 
+  def human_winner
+    human.increment_score
+    human.update_history(human.move.value, 'x')
+    computer.update_history(computer.bot.move.value, ' ')
+  end
+
+  def computer_winner
+    computer.increment_score
+    computer.update_history(computer.bot.move.value, 'x')
+    human.update_history(human.move.value, ' ')
+  end
+
   def move_list
     human.player_history.size.times do |x|
       human_info = "#{human.player_history[x][0]} #{human.player_history[x][1]}"
@@ -295,14 +311,12 @@ class GameMessages
     if human.player_score > computer.player_score
       format_message("You beat the computer. GREAT!")
     else
-      format_message("The computer won! LOSER!")
+      format_message("The computer won! TERRIBLE!")
     end
-    human.player_score = 0
-    computer.player_score = 0
   end
 end
 
-class UserPrompts < GameMessages
+module UserPrompts
   def play_again?
     answer = nil
     loop do
@@ -327,8 +341,10 @@ class UserPrompts < GameMessages
   end
 end
 
-class RPSGame < UserPrompts
+class RPSGame
   attr_accessor :human, :computer
+  include GameMessages
+  include UserPrompts
 
   def initialize
     system 'clear'
@@ -336,21 +352,28 @@ class RPSGame < UserPrompts
     @win_limit = 0
   end
 
-  def clear_history
-    human.new_history
-    computer.new_history
-  end
-
-  def play
+  def initialize_new_game
     @human = Human.new
     @computer = Computer.new
     choose_win_limit
+  end
+  
+  def clear_history
+    human.new_history
+    computer.new_history
+    human.player_score = 0
+    computer.player_score = 0
     round_counter = 0
+    @computer = Computer.new
+    choose_win_limit
+  end
 
+  def play
+    initialize_new_game
+    round_counter = 0
     loop do
       round_counter += 1
       puts "Round #{round_counter}"
-
       computer.bot.choose(human.move_options)
       human.choose
       display_moves
@@ -358,9 +381,6 @@ class RPSGame < UserPrompts
       if human.player_score >= @win_limit || computer.player_score >= @win_limit
         game_winner!
         break unless play_again?
-        round_counter = 0
-        @computer = Computer.new
-        choose_win_limit
         clear_history
       end
     end
