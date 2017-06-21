@@ -4,12 +4,12 @@ class Move
   VALUES = ["rock", "paper", "scissors", "spock", "lizard"]
 
   WIN_COMBOS = {
-    'rock' => %w(spock paper),
-    'paper' => %w(lizard scissors),
-    'scissors' => %w(rock spock),
-    'lizard' => %w(rock scissors),
-    'spock' => %w(paper lizard)
-    }
+    'rock' => %w[spock paper],
+    'paper' => %w[lizard scissors],
+    'scissors' => %w[rock spock],
+    'lizard' => %w[rock scissors],
+    'spock' => %w[paper lizard]
+  }
   attr_reader :value
 
   def initialize; end
@@ -60,13 +60,13 @@ class Spock < Move
 end
 
 module MoveHistory
-  #attr_accessor :move_options, :player_history, :current_game_history
+  # attr_accessor :move_options, :player_history, :current_game_history
 
-  #def initialize
-  #  @player_history = []
-  #  @current_game_history = {'rock' => 0, 'paper' => 0, 'scissors' => 0, 'lizard' => 0, 'spock' => 0}
-  #  @move_options = ["rock", "paper", "scissors", "spock", "lizard"]
-  #end
+  # def initialize
+  #   @player_history = []
+  #   @current_game_history = {'rock' => 0, 'paper' => 0, 'scissors' => 0, 'lizard' => 0, 'spock' => 0}
+  #   @move_options = ["rock", "paper", "scissors", "spock", "lizard"]
+  # end
 
   def update_history(move, result)
     @player_history << [move, result]
@@ -74,56 +74,54 @@ module MoveHistory
   end
 
   def update_win(move, computer_name)
-    new_history = []
-    if computer_name == "Mr. Bigglesworth"
-      @current_game_history.each do |hand,weight|
+    new_hist = []
+      @current_game_history.each do |hand, _|
         if move == hand
-          new_history << [hand] * 3
+          computer_name == "Mr. Bigglesworth" ? new_hist << [hand] * 3 : new_hist << [hand] * 4
         else
-          new_history << [hand] * 1
+          new_hist << [hand] * 1
         end
       end
-    else
-      @current_game_history.each do |hand,weight|
-        if move == hand
-          new_history << [hand] * 4
-        else
-          new_history << [hand] * 1
-        end
-      end
-    end
-    (@move_options << new_history).flatten!.sort!
+    (@move_options << new_hist).flatten!.sort!
   end
 
   def new_history
     @player_history = []
-    @current_game_history = {'rock' => 0, 'paper' => 0, 'scissors' => 0, 'lizard' => 0, 'spock' => 0}
+    @current_game_history = {
+      'rock' => 0,
+      'paper' => 0,
+      'scissors' => 0,
+      'lizard' => 0,
+      'spock' => 0
+    }
     @move_options = ["rock", "paper", "scissors", "spock", "lizard"]
   end
 end
 
 class Player
   include MoveHistory
-  attr_accessor :move, :name, :bot, :player_score, :player_history, :current_game_history, :move_options
+  attr_accessor :move, :name, :bot, :player_score,
+                :player_history, :current_game_history, :move_options
 
   def initialize
     @player_history = []
-    @current_game_history = {'rock' => 0, 'paper' => 0, 'scissors' => 0, 'lizard' => 0, 'spock' => 0}
-    @move_options = ["rock", "paper", "scissors", "spock", "lizard"]
+    @move_options = nil
+    @current_game_history = nil
     @player_score = 0
+    new_history
   end
-  
+
   def increment_score
     @player_score += 1
   end
 
   def instantiate_move(choice)
     case choice
-      when "rock" then Rock.new
-      when "paper" then Paper.new
-      when "scissors" then Scissors.new
-      when "lizard" then Lizard.new
-      when "spock" then Spock.new
+    when "rock" then Rock.new
+    when "paper" then Paper.new
+    when "scissors" then Scissors.new
+    when "lizard" then Lizard.new
+    when "spock" then Spock.new
     end
   end
 end
@@ -150,26 +148,26 @@ class Human < Player
     loop do
       puts "Choose a move (1)rock, (2)paper, (3)scissors, (4)lizard, (5)spock:"
       choice = gets.chomp.to_i
-      break if [1,2,3,4,5].include?(choice)
+      break if [1, 2, 3, 4, 5].include?(choice)
       puts "Sorry, invalid choice number!"
     end
-    case choice
-      when 1 then choice = 'rock'
-      when 2 then choice = 'paper'
-      when 3 then choice = 'scissors'
-      when 4 then choice = 'lizard'
-      when 5 then choice = 'spock'
-    end
+
+    choice = choice_define(choice)
     self.move = instantiate_move(choice)
   end
-#
-#  def to_s
-#    @move
-#  end
+
+  def choice_define(choice)
+    case choice
+    when 1 then 'rock'
+    when 2 then 'paper'
+    when 3 then 'scissors'
+    when 4 then 'lizard'
+    when 5 then 'spock'
+    end
+  end
 end
 
 class Computer < Player
-
   def initialize
     @bot = choose_difficulty
     super
@@ -192,7 +190,7 @@ class Computer < Player
     when 3 then Difficult.new
     when 4 then [Random.new, Difficult.new, Medium.new, Easy.new].sample
     end
-  end  
+  end
 end
 
 class Easy < Computer
@@ -200,7 +198,7 @@ class Easy < Computer
     @name = "Eddy"
   end
 
-  def choose(move_options)
+  def choose(*)
     self.move = instantiate_move(Move::VALUES.sample)
   end
 end
@@ -209,7 +207,7 @@ class Medium < Computer
   def initialize
     @name = "Mr. Bigglesworth"
   end
-  
+
   def choose(move_options)
     selection = move_options.sample
     move = Move::WIN_COMBOS[selection].sample
@@ -227,7 +225,7 @@ class Difficult < Computer
     move = Move::WIN_COMBOS[selection].sample
     self.move = instantiate_move(move)
   end
-end  
+end
 
 class GameMessages
   CONSOLE_WIDTH = 80
@@ -256,14 +254,10 @@ class GameMessages
 
   def display_moves
     line1 = "+----#{human.name} || #{computer.bot.name}----+"
-    if human.move > computer.bot.move 
-      line2 = "#{human.name} won!"
-    elsif computer.bot.move > human.move 
-      line2 ="#{computer.bot.name} won!"
-    else
-      line2 = "It's a tie!"
-    end
-    format_message(line1,line2)
+    line2 = "It's a tie!"
+    line2 = "#{human.name} won!" if human.move > computer.bot.move
+    line2 = "#{computer.bot.name} won!" if computer.bot.move > human.move
+    format_message(line1, line2)
   end
 
   def display_round_winner
@@ -279,7 +273,7 @@ class GameMessages
       computer.update_history(computer.bot.move.value, ' ')
       human.update_history(human.move.value, ' ')
     end
-    human.update_win(human.move.value,computer.name)
+    human.update_win(human.move.value, computer.name)
     puts ""
     puts move_list
     puts_center("#{human.name} won #{human.player_score}/#{@win_limit} games!")
@@ -292,9 +286,7 @@ class GameMessages
     human.player_history.size.times do |x|
       human_info = "#{human.player_history[x][0]} #{human.player_history[x][1]}"
       computer_info = "#{computer.player_history[x][1]} #{computer.player_history[x][0]}"
-
-      spacing = human_info.size
-      puts (" " * (38 - spacing)) + "#{human_info} || #{computer_info}"
+      puts (" " * (38 - human_info.size)) + "#{human_info} || #{computer_info}"
     end
     print ""
   end
