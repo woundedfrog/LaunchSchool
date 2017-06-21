@@ -286,7 +286,7 @@ class GameMessages
     human.player_history.size.times do |x|
       human_info = "#{human.player_history[x][0]} #{human.player_history[x][1]}"
       computer_info = "#{computer.player_history[x][1]} #{computer.player_history[x][0]}"
-      puts (" " * (38 - human_info.size)) + "#{human_info} || #{computer_info}"
+      puts " " * (38 - human_info.size) + "#{human_info} || #{computer_info}"
     end
     print ""
   end
@@ -306,7 +306,7 @@ class UserPrompts < GameMessages
   def play_again?
     answer = nil
     loop do
-      puts "We've reached the end of the game. Would you like to play again? (y/n)".center(80)
+      puts_center("Game Over. Would you like to play again? (y/n)")
       answer = gets.chomp
       break if ['y', 'n'].include?(answer.downcase)
       puts "Sorry, input must be 'y' or 'n'"
@@ -325,7 +325,6 @@ class UserPrompts < GameMessages
     system 'clear'
     puts "Thank you! Let's start."
   end
-
 end
 
 class RPSGame < UserPrompts
@@ -356,18 +355,17 @@ class RPSGame < UserPrompts
       human.choose
       display_moves
       display_round_winner
-      if (human.player_score >= @win_limit || computer.player_score >= @win_limit)
+      if human.player_score >= @win_limit || computer.player_score >= @win_limit
         game_winner!
         break unless play_again?
         round_counter = 0
         @computer = Computer.new
         choose_win_limit
         clear_history
-      end    
+      end
     end
     display_goodbye_message
   end
 end
 
 RPSGame.new.play
-#x = RPSGame.new
