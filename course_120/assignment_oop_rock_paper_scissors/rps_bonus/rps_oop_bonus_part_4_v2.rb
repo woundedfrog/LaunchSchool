@@ -59,27 +59,37 @@ class Spock < Move
   end
 end
 
-class MoveHistory
-  attr_accessor :move_options, :player_history, :current_game_history
+module MoveHistory
+  #attr_accessor :move_options, :player_history, :current_game_history
 
-  def initialize
-    @player_history = []
-    @current_game_history = {'rock' => 0, 'paper' => 0, 'scissors' => 0, 'lizard' => 0, 'spock' => 0}
-    @move_options = ["rock", "paper", "scissors", "spock", "lizard"]
-  end
+  #def initialize
+  #  @player_history = []
+  #  @current_game_history = {'rock' => 0, 'paper' => 0, 'scissors' => 0, 'lizard' => 0, 'spock' => 0}
+  #  @move_options = ["rock", "paper", "scissors", "spock", "lizard"]
+  #end
 
   def update_history(move, result)
     @player_history << [move, result]
     @current_game_history[move] += 1
   end
 
-  def update_win(move)
+  def update_win(move, computer_name)
     new_history = []
-    @current_game_history.each do |hand,weight|
-      if move == hand
-        new_history << [hand] * 4
-      else
-        new_history << [hand] * 1
+    if computer_name == "Mr. Bigglesworth"
+      @current_game_history.each do |hand,weight|
+        if move == hand
+          new_history << [hand] * 3
+        else
+          new_history << [hand] * 1
+        end
+      end
+    else
+      @current_game_history.each do |hand,weight|
+        if move == hand
+          new_history << [hand] * 4
+        else
+          new_history << [hand] * 1
+        end
       end
     end
     (@move_options << new_history).flatten!.sort!
@@ -90,20 +100,19 @@ class MoveHistory
     @current_game_history = {'rock' => 0, 'paper' => 0, 'scissors' => 0, 'lizard' => 0, 'spock' => 0}
     @move_options = ["rock", "paper", "scissors", "spock", "lizard"]
   end
-
-  #def to_s
-  #  self
-  #end
 end
 
-class Player < MoveHistory
-  attr_accessor :move, :name, :bot, :player_score, :pl_history
+class Player
+  include MoveHistory
+  attr_accessor :move, :name, :bot, :player_score, :player_history, :current_game_history, :move_options
 
   def initialize
-    super
+    @player_history = []
+    @current_game_history = {'rock' => 0, 'paper' => 0, 'scissors' => 0, 'lizard' => 0, 'spock' => 0}
+    @move_options = ["rock", "paper", "scissors", "spock", "lizard"]
     @player_score = 0
   end
-
+  
   def increment_score
     @player_score += 1
   end
@@ -139,17 +148,24 @@ class Human < Player
   def choose
     choice = nil
     loop do
-      puts "Please choose rock, paper, or scissors:"
-      choice = gets.chomp.downcase
-      break if Move::VALUES.include?(choice)
-      puts "Sorry, invalid choice!"
+      puts "Choose a move (1)rock, (2)paper, (3)scissors, (4)lizard, (5)spock:"
+      choice = gets.chomp.to_i
+      break if [1,2,3,4,5].include?(choice)
+      puts "Sorry, invalid choice number!"
+    end
+    case choice
+      when 1 then choice = 'rock'
+      when 2 then choice = 'paper'
+      when 3 then choice = 'scissors'
+      when 4 then choice = 'lizard'
+      when 5 then choice = 'spock'
     end
     self.move = instantiate_move(choice)
   end
-
-  def to_s
-    @move
-  end
+#
+#  def to_s
+#    @move
+#  end
 end
 
 class Computer < Player
@@ -186,13 +202,18 @@ class Easy < Computer
 
   def choose(move_options)
     self.move = instantiate_move(Move::VALUES.sample)
-    #binding.pry
   end
 end
 
 class Medium < Computer
   def initialize
     @name = "Mr. Bigglesworth"
+  end
+  
+  def choose(move_options)
+    selection = move_options.sample
+    move = Move::WIN_COMBOS[selection].sample
+    self.move = instantiate_move(move)
   end
 end
 
@@ -202,7 +223,9 @@ class Difficult < Computer
   end
 
   def choose(move_options)
-    self.move = instantiate_move(Move::WIN_COMBOS[move_options.sample].sample)
+    selection = move_options.sample
+    move = Move::WIN_COMBOS[selection].sample
+    self.move = instantiate_move(move)
   end
 end  
 
@@ -223,7 +246,7 @@ class GameMessages
   end
 
   def display_welcome_message
-    line1 = "Hello! Welcome to Rock Paper Scissors!"
+    line1 = "Hello! Welcome to Rock Paper Scissors Lizard and Spock!"
     format_message(line1)
   end
 
@@ -246,7 +269,6 @@ class GameMessages
   def display_round_winner
     if human.move > computer.bot.move
       human.increment_score
-      #binding.pry
       human.update_history(human.move.value, 'x')
       computer.update_history(computer.bot.move.value, ' ')
     elsif computer.bot.move > human.move
@@ -257,7 +279,7 @@ class GameMessages
       computer.update_history(computer.bot.move.value, ' ')
       human.update_history(human.move.value, ' ')
     end
-    human.update_win(human.move.value)
+    human.update_win(human.move.value,computer.name)
     puts ""
     puts move_list
     puts_center("#{human.name} won #{human.player_score}/#{@win_limit} games!")
