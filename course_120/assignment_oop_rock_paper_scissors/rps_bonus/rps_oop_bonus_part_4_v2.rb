@@ -12,8 +12,6 @@ class Move
   }
   attr_reader :value
 
-  def initialize; end
-
   def to_s
     @value.to_s
   end
@@ -61,7 +59,7 @@ end
 
 module MoveHistory
   def update_history(move, result)
-    @player_history << [move, result]
+    @player_hist << [move, result]
     @current_game_history[move] += 1
   end
 
@@ -81,7 +79,7 @@ module MoveHistory
   end
 
   def new_history
-    @player_history = []
+    @player_hist = []
     @current_game_history = {
       'rock' => 0,
       'paper' => 0,
@@ -95,11 +93,12 @@ end
 
 class Player
   include MoveHistory
-  attr_accessor :move, :name, :bot, :player_score,
-                :player_history, :current_game_history, :move_options
+  attr_accessor :move, :name, :player_score,
+                :player_hist, :current_game_history, :move_options
+  attr_reader :bot
 
   def initialize
-    @player_history = []
+    @player_hist = []
     @move_options = nil
     @current_game_history = nil
     @player_score = 0
@@ -269,10 +268,12 @@ module GameMessages
   end
 
   def print_score_message
+    ai_score = computer.player_score
+    human_score = human.player_score
     puts ""
     puts move_list
-    puts_center("#{human.name} won #{human.player_score}/#{@win_limit} games!")
-    puts_center("#{computer.bot.name} won #{computer.player_score}/#{@win_limit} games!")
+    puts_center("#{human.name} won #{human_score}/#{@win_limit} rounds!")
+    puts_center("#{computer.bot.name} won #{ai_score}/#{@win_limit} rounds!")
     puts_center("______________________")
     puts ""
   end
@@ -290,9 +291,9 @@ module GameMessages
   end
 
   def move_list
-    human.player_history.size.times do |x|
-      human_info = "#{human.player_history[x][0]} #{human.player_history[x][1]}"
-      comp_info = "#{computer.player_history[x][1]} #{computer.player_history[x][0]}"
+    human.player_hist.size.times do |x|
+      human_info = "#{human.player_hist[x][0]} #{human.player_hist[x][1]}"
+      comp_info = "#{computer.player_hist[x][1]} #{computer.player_hist[x][0]}"
       puts " " * (38 - human_info.size) + "#{human_info} || #{comp_info}"
     end
     print ""
