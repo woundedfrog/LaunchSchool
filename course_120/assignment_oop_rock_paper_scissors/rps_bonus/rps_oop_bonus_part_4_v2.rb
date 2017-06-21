@@ -60,15 +60,6 @@ class Spock < Move
 end
 
 module MoveHistory
-  # attr_accessor :move_options, :player_history, :current_game_history
-
-  # def initialize
-  #   @player_history = []
-  #   @current_game_history = {'rock' => 0, 'paper' => 0,
-  # 'scissors' => 0, 'lizard' => 0, 'spock' => 0}
-  #   @move_options = ["rock", "paper", "scissors", "spock", "lizard"]
-  # end
-
   def update_history(move, result)
     @player_history << [move, result]
     @current_game_history[move] += 1
@@ -266,22 +257,22 @@ module GameMessages
 
   def display_round_winner
     if human.move > computer.bot.move
-      human.increment_score
-      human.update_history(human.move.value, 'x')
-      computer.update_history(computer.bot.move.value, ' ')
+      human_winner
     elsif computer.bot.move > human.move
-      computer.increment_score
-      computer.update_history(computer.bot.move.value, 'x')
-      human.update_history(human.move.value, ' ')
+      computer_winner
     else
       computer.update_history(computer.bot.move.value, ' ')
       human.update_history(human.move.value, ' ')
     end
     human.update_win(human.move.value, computer.name)
+    print_score_message
+  end
+
+  def print_score_message
     puts ""
     puts move_list
     puts_center("#{human.name} won #{human.player_score}/#{@win_limit} games!")
-    puts_center("#{computer.bot.name} won #{computer.player_score}/#{@win_limit} rounds!")
+    puts_center("#{computer.bot.name} won #{computer.player_score}/#{@win_limit} games!")
     puts_center("______________________")
     puts ""
   end
@@ -301,8 +292,8 @@ module GameMessages
   def move_list
     human.player_history.size.times do |x|
       human_info = "#{human.player_history[x][0]} #{human.player_history[x][1]}"
-      computer_info = "#{computer.player_history[x][1]} #{computer.player_history[x][0]}"
-      puts " " * (38 - human_info.size) + "#{human_info} || #{computer_info}"
+      comp_info = "#{computer.player_history[x][1]} #{computer.player_history[x][0]}"
+      puts " " * (38 - human_info.size) + "#{human_info} || #{comp_info}"
     end
     print ""
   end
@@ -326,7 +317,7 @@ module UserPrompts
       puts "Sorry, input must be 'y' or 'n'"
     end
     system 'clear'
-    answer.downcase == 'y' # this returns true or false automatically
+    answer.downcase == 'y'
   end
 
   def choose_win_limit
@@ -341,39 +332,35 @@ module UserPrompts
   end
 end
 
-class RPSGame
+class NewGame
+  def initialize_new_game
+    @computer = Computer.new
+    choose_win_limit
+    human.new_history
+    computer.new_history
+    human.player_score = 0
+    computer.player_score = 0
+    @round_counter = 0
+  end
+end
+
+class RPSGame < NewGame
   attr_accessor :human, :computer
-  include GameMessages
   include UserPrompts
+  include GameMessages
 
   def initialize
     system 'clear'
     display_welcome_message
     @win_limit = 0
-  end
-
-  def initialize_new_game
     @human = Human.new
-    @computer = Computer.new
-    choose_win_limit
-  end
-  
-  def clear_history
-    human.new_history
-    computer.new_history
-    human.player_score = 0
-    computer.player_score = 0
-    round_counter = 0
-    @computer = Computer.new
-    choose_win_limit
   end
 
   def play
     initialize_new_game
-    round_counter = 0
     loop do
-      round_counter += 1
-      puts "Round #{round_counter}"
+      @round_counter += 1
+      puts "Round #{@round_counter}"
       computer.bot.choose(human.move_options)
       human.choose
       display_moves
@@ -381,7 +368,7 @@ class RPSGame
       if human.player_score >= @win_limit || computer.player_score >= @win_limit
         game_winner!
         break unless play_again?
-        clear_history
+        initialize_new_game
       end
     end
     display_goodbye_message
