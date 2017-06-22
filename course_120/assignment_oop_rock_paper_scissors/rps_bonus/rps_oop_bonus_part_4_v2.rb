@@ -242,7 +242,8 @@ module GameMessages
   end
 
   def display_goodbye_message
-    puts "Thank you for playing Rock paper Scissors Lizard and Spock!"
+    format_message("Thank you for playing!")
+    puts "\n\n\n\n"
   end
 
   def display_moves
@@ -291,19 +292,19 @@ module GameMessages
   def print_score_message
     comp_score = computer.player_score
     human_score = human.player_score
-    puts ""
-    puts move_list
-    puts_center("#{human.name} won #{human_score}/#{@win_limit} rounds!")
-    puts_center("#{computer.bot.name} won #{comp_score}/#{@win_limit} rounds!")
-    puts_center("______________________")
-    puts ""
+    puts_center("Round #{@round_counter}")
+    puts move_list(comp_score, human_score)
   end
 
-  def move_list
+  def move_list(comp_score, human_score)
     human.player_hist.size.times do |x|
       print_score_board(x)
     end
     print ""
+    puts_center("______________________\n")
+    puts_center("#{human.name} won #{human_score}/#{@win_limit} rounds!")
+    puts_center("#{computer.bot.name} won #{comp_score}/#{@win_limit} rounds!")
+    puts "=" * CONSOLE_WIDTH + "\n"
   end
 
   def print_score_board(x)
@@ -380,7 +381,6 @@ class RPSGame
     initialize_new_game
     loop do
       @round_counter += 1
-      puts "Round #{@round_counter}"
       computer.bot.choose(human.move_options)
       human.choose
       display_moves
