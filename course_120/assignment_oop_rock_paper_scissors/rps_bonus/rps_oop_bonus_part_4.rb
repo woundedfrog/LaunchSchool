@@ -1,5 +1,3 @@
-require 'pry'
-
 class Move
   VALUES = ['rock', 'paper', 'scissors', 'lizard', 'spock']
 
@@ -221,4 +219,3 @@ class RPSGame < UserPrompts
 end
 
 RPSGame.new.play
-#x = RPSGame.new

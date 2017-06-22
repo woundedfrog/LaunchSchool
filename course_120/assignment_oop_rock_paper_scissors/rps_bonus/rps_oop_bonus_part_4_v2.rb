@@ -1,6 +1,4 @@
 # verion 2
-require 'pry'
-
 class Move
   VALUES = ["rock", "paper", "scissors", "spock", "lizard"]
 
@@ -128,17 +126,6 @@ class Human < Player
     set_name
   end
 
-  def set_name
-    n = nil
-    loop do
-      puts "Please enter your player name!"
-      n = gets.chomp
-      break unless n.empty?
-      puts "Sorry, that's not a valid input!"
-    end
-    @name = n.capitalize
-  end
-
   def choose
     choice = nil
     loop do
@@ -152,6 +139,8 @@ class Human < Player
     @move = instantiate_move(choice)
   end
 
+  private
+
   def choice_define(choice)
     case choice
     when 1 then 'rock'
@@ -161,6 +150,17 @@ class Human < Player
     when 5 then 'spock'
     end
   end
+
+  def set_name
+    n = nil
+    loop do
+      puts "Please enter your player name!"
+      n = gets.chomp
+      break unless n.empty?
+      puts "Sorry, that's not a valid input!"
+    end
+    @name = n.capitalize
+  end
 end
 
 class Computer < Player
@@ -168,6 +168,8 @@ class Computer < Player
     @bot = choose_difficulty
     super
   end
+
+  private
 
   def choose_difficulty
     loop do
@@ -190,6 +192,8 @@ class Computer < Player
     when 4 then [Hard.new, Medium.new, Easy.new].sample
     end
   end
+
+  public
 
   def choose(move_options)
     selection = move_options.sample
@@ -221,10 +225,12 @@ class Hard < Computer
 end
 
 module GameMessages
+  private
+
   CONSOLE_WIDTH = 80
 
   def format_message(*message)
-    system 'clear'
+    (system 'clear') || (system 'cls')
     puts "=" * CONSOLE_WIDTH
     message.each do |line|
       puts_center(line)
@@ -324,6 +330,8 @@ module GameMessages
 end
 
 module UserPrompts
+  private
+
   def play_again?
     answer = nil
     loop do
@@ -332,7 +340,7 @@ module UserPrompts
       break if ['y', 'n'].include?(answer.downcase)
       puts "Sorry, input must be 'y' or 'n'"
     end
-    system 'clear'
+    (system 'clear') || (system 'cls')
     answer.downcase == 'y'
   end
 
@@ -343,12 +351,14 @@ module UserPrompts
       break if @win_limit > 0
       puts "Please enter a valid number!"
     end
-    system 'clear'
+    (system 'clear') || (system 'cls')
     puts "Thank you! Let's start."
   end
 end
 
 module NewGame
+  private
+
   def initialize_new_game
     @computer = Computer.new
     choose_win_limit
@@ -367,14 +377,10 @@ class RPSGame
   include NewGame
 
   def initialize
-    system 'clear'
+    (system 'clear') || (system 'cls')
     display_welcome_message
     @win_limit = 0
     @human = Human.new
-  end
-
-  def game_over?
-    human.player_score >= @win_limit || computer.player_score >= @win_limit
   end
 
   def play
@@ -392,6 +398,12 @@ class RPSGame
       end
     end
     display_goodbye_message
+  end
+
+  private
+
+  def game_over?
+    human.player_score >= @win_limit || computer.player_score >= @win_limit
   end
 end
 
