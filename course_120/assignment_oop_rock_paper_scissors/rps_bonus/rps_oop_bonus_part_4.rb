@@ -43,10 +43,10 @@ class MoveHistory
 
   def update_history(move)
     @game_history[move] += 1
-    formated_history
+    format_history
   end
 
-  def formated_history
+  def format_history
     new_history = []
     @game_history.each do |hand,weight|
       new_history << [hand] * weight

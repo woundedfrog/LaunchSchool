@@ -81,14 +81,11 @@ module MoveHistory
 
   def reset_history
     @player_hist = []
-    @current_game_history = {
-      'rock' => 0,
-      'paper' => 0,
-      'scissors' => 0,
-      'lizard' => 0,
-      'spock' => 0
-    }
     @move_options = ["rock", "paper", "scissors", "spock", "lizard"]
+    @current_game_history = {
+      'rock' => 0, 'paper' => 0, 'scissors' => 0,
+      'lizard' => 0, 'spock' => 0
+    }
   end
 end
 
