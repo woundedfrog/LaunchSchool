@@ -1,4 +1,5 @@
 # verion 2
+require 'pry'
 class Move
   VALUES = ["rock", "paper", "scissors", "spock", "lizard"]
 
@@ -10,7 +11,7 @@ class Move
     'spock' => %w[paper lizard]
   }
 
-  COMBOS = {
+  COMPARE_HANDS = {
     'rock' => %w[scissors lizard],
     'paper' => %w[rock spock],
     'scissors' => %w[paper lizard],
@@ -25,28 +26,38 @@ class Move
   end
 
   def >(other_move)
-    COMBOS[value].include?(other_move.value)
+    COMPARE_HANDS[value].include?(other_move)
   end
 end
 
 class Rock < Move
-  def initialize; @value = "rock"; end
+  def initialize
+    @value = "rock"
+  end
 end
 
 class Paper < Move
-  def initialize; @value = "paper"; end
+  def initialize
+    @value = "paper"
+  end
 end
 
 class Scissors < Move
-  def initialize; @value = "scissors"; end
+  def initialize
+    @value = "scissors"
+  end
 end
 
 class Lizard < Move
-  def initialize; @value = "lizard"; end
+  def initialize
+    @value = "lizard"
+  end
 end
 
 class Spock < Move
-  def initialize; @value = "spock"; end
+  def initialize
+    @value = "spock"
+  end
 end
 
 module MoveHistory
@@ -123,6 +134,10 @@ class Human < Player
     set_name
   end
 
+  def move
+    @move.value
+  end
+
   def choose
     choice = nil
     loop do
@@ -166,6 +181,24 @@ class Computer < Player
     super
   end
 
+  def b_name
+    @bot.name
+  end
+
+  def b_move
+    @bot.move.value
+  end
+
+  def b_choose(move_options)
+    @bot.choose(move_options)
+  end
+
+  def choose(move_options)
+    selection = move_options.sample
+    move = Move::WIN_COMBOS[selection].sample
+    @move = instantiate_move(move)
+  end
+
   private
 
   def choose_difficulty
@@ -188,14 +221,6 @@ class Computer < Player
     when 3 then Hard.new
     when 4 then [Hard.new, Medium.new, Easy.new].sample
     end
-  end
-
-  public
-
-  def choose(move_options)
-    selection = move_options.sample
-    move = Move::WIN_COMBOS[selection].sample
-    @move = instantiate_move(move)
   end
 end
 
@@ -221,8 +246,36 @@ class Hard < Computer
   end
 end
 
+module ScoreKeeper
+  def determine_winner_update_history(human_move, computer_move)
+    if human_move > computer_move
+      human_update_score_history
+    elsif computer_move > human_move
+      computer_update_score_history
+    else
+      computer.update_history(computer_move, ' ')
+      human.update_history(human_move, ' ')
+    end
+    human.update_win(human_move, computer.b_name)
+  end
+
+  def human_update_score_history
+    human.increment_score
+    human.update_history(human.move, 'x')
+    computer.update_history(computer.b_move, ' ')
+  end
+
+  def computer_update_score_history
+    computer.increment_score
+    computer.update_history(computer.b_move, 'x')
+    human.update_history(human.move, ' ')
+  end
+end
+
 module GameMessages
   private
+
+  include ScoreKeeper
 
   CONSOLE_WIDTH = 80
 
@@ -251,9 +304,9 @@ module GameMessages
 
   def display_moves
     human_name = human.name
-    computer_name = computer.bot.name
+    computer_name = computer.b_name
     human_move = human.move
-    computer_move = computer.bot.move
+    computer_move = computer.b_move
     line1 = "+----#{human_name} || #{computer_name}----+"
     line2 = "It's a tie!"
     line2 = "#{human_name} won!" if human_move > computer_move
@@ -263,66 +316,42 @@ module GameMessages
 
   def display_round_winner
     human_move = human.move
-    computer_move = computer.bot.move
+    computer_move = computer.b_move
     determine_winner_update_history(human_move, computer_move)
-    human.update_win(human_move.value, computer.name)
-    print_score_message
+    display_score_message
   end
 
-  def determine_winner_update_history(human_move, computer_move)
-    if human_move > computer_move
-      human_update_score_history
-    elsif computer_move > human_move
-      computer_update_score_history
-    else
-      computer.update_history(computer_move.value, ' ')
-      human.update_history(human_move.value, ' ')
-    end
-  end
-
-  def human_update_score_history
-    human.increment_score
-    human.update_history(human.move.value, 'x')
-    computer.update_history(computer.bot.move.value, ' ')
-  end
-
-  def computer_update_score_history
-    computer.increment_score
-    computer.update_history(computer.bot.move.value, 'x')
-    human.update_history(human.move.value, ' ')
-  end
-
-  def print_score_message
+  def display_score_message
     comp_score = computer.player_score
     human_score = human.player_score
     puts_center("Round #{@round_counter}")
-    puts move_list(comp_score, human_score)
+    display_move_list(comp_score, human_score)
   end
 
-  def move_list(comp_score, human_score)
+  def display_move_list(comp_score, human_score)
     human.player_hist.size.times do |x|
-      print_score_board(x)
+      display_score_board(x)
     end
     print ""
     puts_center("______________________\n")
     puts_center("#{human.name} won #{human_score}/#{@win_limit} rounds!")
-    puts_center("#{computer.bot.name} won #{comp_score}/#{@win_limit} rounds!")
+    puts_center("#{computer.b_name} won #{comp_score}/#{@win_limit} rounds!")
     puts "=" * CONSOLE_WIDTH + "\n"
   end
 
-  def print_score_board(x)
+  def display_score_board(x)
     human_info = human.player_hist[x].join(' ')
     comp_info = computer.player_hist[x].reverse.join(' ')
     puts " " * (38 - human_info.size) + "#{human_info} || #{comp_info}"
   end
 
-  def game_winner_message
+  def display_game_winner_message
     if human.player_score > computer.player_score
       format_message("You beat the computer. GREAT!")
     else
       format_message("The computer won! TERRIBLE!")
     end
-    print_score_message
+    display_score_message
   end
 end
 
@@ -353,25 +382,10 @@ module UserPrompts
   end
 end
 
-module NewGame
-  private
-
-  def initialize_new_game
-    @computer = Computer.new
-    choose_win_limit
-    human.reset_history
-    computer.reset_history
-    human.player_score = 0
-    computer.player_score = 0
-    @round_counter = 0
-  end
-end
-
 class RPSGame
   attr_accessor :human, :computer
   include UserPrompts
   include GameMessages
-  include NewGame
 
   def initialize
     (system 'clear') || (system 'cls')
@@ -384,12 +398,12 @@ class RPSGame
     initialize_new_game
     loop do
       @round_counter += 1
-      computer.bot.choose(human.move_options)
+      computer.b_choose(human.move_options)
       human.choose
       display_moves
       display_round_winner
       if game_over?
-        game_winner_message
+        display_game_winner_message
         break unless play_again?
         initialize_new_game
       end
@@ -401,6 +415,16 @@ class RPSGame
 
   def game_over?
     human.player_score >= @win_limit || computer.player_score >= @win_limit
+  end
+
+  def initialize_new_game
+    @computer = Computer.new
+    choose_win_limit
+    human.reset_history
+    computer.reset_history
+    human.player_score = 0
+    computer.player_score = 0
+    @round_counter = 0
   end
 end
 
