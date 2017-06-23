@@ -247,7 +247,9 @@ class Hard < Computer
 end
 
 module ScoreKeeper
-  def determine_winner_update_history(human_move, computer_move)
+  def determine_winner_update_history
+    human_move = human.move
+    computer_move = computer.b_move
     if human_move > computer_move
       human_update_score_history
     elsif computer_move > human_move
@@ -314,14 +316,7 @@ module GameMessages
     format_message(line1, line2)
   end
 
-  def display_round_winner
-    human_move = human.move
-    computer_move = computer.b_move
-    determine_winner_update_history(human_move, computer_move)
-    display_score_message
-  end
-
-  def display_score_message
+  def display_round_win_info
     comp_score = computer.player_score
     human_score = human.player_score
     puts_center("Round #{@round_counter}")
@@ -351,7 +346,7 @@ module GameMessages
     else
       format_message("The computer won! TERRIBLE!")
     end
-    display_score_message
+    display_round_win_info
   end
 end
 
@@ -401,7 +396,8 @@ class RPSGame
       computer.b_choose(human.move_options)
       human.choose
       display_moves
-      display_round_winner
+      determine_winner_update_history
+      display_round_win_info
       if game_over?
         display_game_winner_message
         break unless play_again?
