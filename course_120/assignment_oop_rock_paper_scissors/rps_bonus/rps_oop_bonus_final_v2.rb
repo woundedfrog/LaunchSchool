@@ -1,5 +1,4 @@
 # verion 2
-require 'pry'
 class Move
   VALUES = ["rock", "paper", "scissors", "spock", "lizard"]
 
