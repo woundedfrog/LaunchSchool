@@ -64,6 +64,7 @@ module MoveHistory
   def update_history(move, result)
     @player_hist << [move, result]
     @current_game_history[move] += 1
+    increment_score unless result.include?(" ")
   end
 
   def update_win(move, comp_n)
@@ -90,6 +91,10 @@ module MoveHistory
     end
   end
 
+  def increment_score
+    @player_score += 1
+  end
+
   def reset_history
     @player_hist = []
     @move_options = ["rock", "paper", "scissors", "spock", "lizard"]
@@ -111,10 +116,6 @@ class Player
     @current_game_history = nil
     @player_score = 0
     reset_history
-  end
-
-  def increment_score
-    @player_score += 1
   end
 
   def instantiate_move(choice)
@@ -251,9 +252,9 @@ module ScoreKeeper
     human_move = human.move
     computer_move = computer.b_move
     if human_move > computer_move
-      human_update_score_history
+      human_update_score_and_history
     elsif computer_move > human_move
-      computer_update_score_history
+      computer_update_score_and_history
     else
       computer.update_history(computer_move, ' ')
       human.update_history(human_move, ' ')
@@ -261,14 +262,12 @@ module ScoreKeeper
     human.update_win(human_move, computer.b_name)
   end
 
-  def human_update_score_history
-    human.increment_score
+  def human_update_score_and_history
     human.update_history(human.move, 'x')
     computer.update_history(computer.b_move, ' ')
   end
 
-  def computer_update_score_history
-    computer.increment_score
+  def computer_update_score_and_history
     computer.update_history(computer.b_move, 'x')
     human.update_history(human.move, ' ')
   end
