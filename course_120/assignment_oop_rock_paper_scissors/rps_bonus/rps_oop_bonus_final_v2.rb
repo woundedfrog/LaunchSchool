@@ -251,9 +251,9 @@ module ScoreKeeper
     human_move = human.move
     computer_move = computer.b_move
     if human_move > computer_move
-      human_update_score_and_history
+      add_human_win_to_history
     elsif computer_move > human_move
-      computer_update_score_and_history
+      add_computer_win_to_history
     else
       computer.update_history(computer_move, ' ')
       human.update_history(human_move, ' ')
@@ -261,12 +261,12 @@ module ScoreKeeper
     human.update_win(human_move, computer.b_name)
   end
 
-  def human_update_score_and_history
+  def add_human_win_to_history
     human.update_history(human.move, 'x')
     computer.update_history(computer.b_move, ' ')
   end
 
-  def computer_update_score_and_history
+  def add_computer_win_to_history
     computer.update_history(computer.b_move, 'x')
     human.update_history(human.move, ' ')
   end
