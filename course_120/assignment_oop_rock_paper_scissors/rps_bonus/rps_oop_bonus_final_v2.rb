@@ -104,6 +104,14 @@ module MoveHistory
   end
 end
 
+module AdvancedChoice
+  def choose(move_options)
+    selection = move_options.sample
+    move = Move::WIN_COMBOS[selection].sample
+    @move = instantiate_move(move)
+  end
+end
+
 class Player
   include MoveHistory
   attr_accessor :move, :player_score
@@ -189,14 +197,8 @@ class Computer < Player
     @bot.move.value
   end
 
-  def b_choose(move_options)
-    @bot.choose(move_options)
-  end
-
   def choose(move_options)
-    selection = move_options.sample
-    move = Move::WIN_COMBOS[selection].sample
-    @move = instantiate_move(move)
+    @bot.choose(move_options)
   end
 
   private
@@ -235,12 +237,16 @@ class Easy < Computer
 end
 
 class Medium < Computer
+  include AdvancedChoice
+
   def initialize
     @name = "Mr. Bigglesworth"
   end
 end
 
 class Hard < Computer
+  include AdvancedChoice
+
   def initialize
     @name = "R2D2"
   end
@@ -391,7 +397,7 @@ class RPSGame
     initialize_new_game
     loop do
       @round_counter += 1
-      computer.b_choose(human.move_options)
+      computer.choose(human.move_options)
       human.choose
       display_moves
       determine_winner_update_history
