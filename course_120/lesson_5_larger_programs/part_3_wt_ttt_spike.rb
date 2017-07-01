@@ -38,12 +38,14 @@ class Player
 end
 
 class TTTGame
+  HUMAN_MAKER = "X"
+  COMPUTER_MARKER = "O"
   attr_reader :board, :human, :computer
 
   def initialize
     @board = Board.new
-    @human = Player.new("x")
-    @computer = Player.new("O")
+    @human = Player.new(HUMAN_MAKER)
+    @computer = Player.new(COMPUTER_MARKER)
   end
   def display_welcome_message
     puts "Welcome to Tic Tac Toe!\n"
@@ -78,8 +80,11 @@ class TTTGame
       puts "Sorry not a valid choice."
     end
 
-    binding.pry
     board.set_square_at(square, human.marker)
+  end
+
+  def computer_moves
+    board.set_square_at((1..9).to_a.sample, computer.marker)
   end
 
   def play
@@ -88,11 +93,12 @@ class TTTGame
       display_board
       human_moves
       display_board
-      broard
-      break if someone_won? || board_full?
+      #break if someone_won? || board_full?
 
       computer_moves
-      break if someone_won? || board_full?
+      display_board
+      #break if someone_won? || board_full?
+      break
     end
     #display_result
     display_goodbye_message
