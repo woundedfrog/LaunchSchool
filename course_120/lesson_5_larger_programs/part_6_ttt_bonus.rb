@@ -12,14 +12,17 @@ class String
 end
 
 module Displayable
-  def format_display(message)
+  def format_display(*message)
     puts ("=" * 80).cyan
-    center_message(message)
+    center_message(*message)
     puts ("=" * 80).cyan
   end
 
-  def center_message(message)
-    puts message.center(80)
+  def center_message(*message)
+    message.each do |line|
+      #binding.pry
+      puts " " * (40 - (line.size/2)) + line
+    end
   end
 
   def colorize(string)
@@ -33,6 +36,17 @@ module Displayable
     gets.chomp
   end
 
+  def joinor(arr, delimiter=', ', word='or')
+    case arr.size
+    when 0 then ''
+    when 1 then arr.first
+    when 2 then arr.join(" #{word} ")
+    else
+      arr[-1] = "#{word} #{arr.last}"
+      arr.join(delimiter)
+    end
+  end
+
   def display_goodbye_message
     format_display("Thank you for playing Tic Tac Toe! Goodbye!")
   end
@@ -43,8 +57,15 @@ module Displayable
   end
 
   def display_board
-    format_display("#{human.name} is #{human.marker} | #{computer.name} is #{computer.marker}")
+    players = "#{human.name}: | #{computer.name}:"
+    player_markers = "marker: #{human.marker} | marker: #{computer.marker}"
+    scores = score_board
+    format_display(players, player_markers, scores)
     board.draw
+  end
+
+  def score_board
+    "score: #{human.score} | score: #{computer.score}"
   end
 
   def display_result
@@ -162,22 +183,27 @@ class Square
 end
 
 class Player
-  attr_reader :marker, :name
+  attr_reader :marker, :name, :score
 
   def initialize(marker)
     @marker = marker
     @name = select_name
+    @score = 0
+  end
+
+  def score_update
+    @score += 1
   end
 end
 
 class Human < Player
   def select_name
-    #loop do
+    loop do
       puts "Enter your name!"
       answer = gets.chomp.capitalize
-      #return answer unless answer == ''
-      #puts "Enter a valid name!"
-    #end
+      return answer unless answer == ''
+      puts "Enter a valid name!"
+    end
   end
 end
 
@@ -216,6 +242,7 @@ class TTTGame
         clear_screen_and_display_board if human_turn?
       end
 
+      update_scores(board.winning_marker)
       display_result
       break unless play_again?
       reset
@@ -226,7 +253,6 @@ class TTTGame
   end
 
   private
-
 
   def current_player_moves
     if human_turn?
@@ -243,7 +269,7 @@ class TTTGame
   end
 
   def human_moves
-    format_display("Choose a square (#{board.unmarked_keys.join(', ')}): ")
+    format_display("Choose a square (#{joinor(board.unmarked_keys)}): ")
     square = nil
     loop do
       square = gets.chomp.to_i
@@ -258,7 +284,10 @@ class TTTGame
     board[board.unmarked_keys.sample] = computer.marker
   end
 
-
+  def update_scores(marker)
+    binding.pry
+    human.marker == marker ? human.score_update : computer.score_update
+  end
 
   def play_again?
     answer = nil
@@ -277,7 +306,6 @@ class TTTGame
     @current_marker = FIRST_TO_MOVE
     clear
   end
-
 end
 
 game = TTTGame.new
