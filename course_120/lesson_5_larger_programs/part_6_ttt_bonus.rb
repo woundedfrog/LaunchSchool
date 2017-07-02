@@ -1,15 +1,29 @@
 require 'pry'
 
-module Displayable
+class String
+  def black;          "\033[30m#{self}\033[0m" end
+  def red;            "\033[31m#{self}\033[0m" end
+  def green;          "\033[32m#{self}\033[0m" end
+  def yellow;         "\033[33m#{self}\033[0m" end
+  def blue;           "\033[34m#{self}\033[0m" end
+  def magenta;        "\033[35m#{self}\033[0m" end
+  def cyan;           "\033[36m#{self}\033[0m" end
+  def gray;           "\033[37m#{self}\033[0m" end
+end
 
+module Displayable
   def format_display(message)
-    puts "=" * 80
+    puts ("=" * 80).cyan
     center_message(message)
-    puts "=" * 80
+    puts ("=" * 80).cyan
   end
 
   def center_message(message)
     puts message.center(80)
+  end
+
+  def colorize(string)
+    puts string.center(80).yellow
   end
 
   def display_welcome_message
@@ -29,7 +43,7 @@ module Displayable
   end
 
   def display_board
-    format_display("You're a #{human.marker}. Computer is a #{computer.marker}.")
+    format_display("#{human.name} is #{human.marker} | #{computer.name} is #{computer.marker}")
     board.draw
   end
 
@@ -69,17 +83,19 @@ class Board
   # rubocop:disable Metrics/AbcSize
 
   def draw
-    center_message("     |     |     ")
-    center_message("  #{@squares[1]}  |  #{@squares[2]}  |  #{@squares[3]}  ")
-    center_message("     |     |     ")
-    center_message("-----+-----+-----")
-    center_message("     |     |     ")
-    center_message("  #{@squares[4]}  |  #{@squares[5]}  |  #{@squares[6]}  ")
-    center_message("     |     |     ")
-    center_message("-----+-----+-----")
-    center_message("     |     |     ")
-    center_message("  #{@squares[7]}  |  #{@squares[8]}  |  #{@squares[9]}  ")
-    center_message("     |     |     ")
+    puts ""
+    colorize("     |     |     ")
+    colorize("  #{@squares[1]}  |  #{@squares[2]}  |  #{@squares[3]}  ")
+    colorize("     |     |     ")
+    colorize("-----+-----+-----")
+    colorize("     |     |     ")
+    colorize("  #{@squares[4]}  |  #{@squares[5]}  |  #{@squares[6]}  ")
+    colorize("     |     |     ")
+    colorize("-----+-----+-----")
+    colorize("     |     |     ")
+    colorize("  #{@squares[7]}  |  #{@squares[8]}  |  #{@squares[9]}  ")
+    colorize("     |     |     ")
+    puts ""
   end
 
   def []=(num, marker)
@@ -146,10 +162,28 @@ class Square
 end
 
 class Player
-  attr_reader :marker
+  attr_reader :marker, :name
 
   def initialize(marker)
     @marker = marker
+    @name = select_name
+  end
+end
+
+class Human < Player
+  def select_name
+    #loop do
+      puts "Enter your name!"
+      answer = gets.chomp.capitalize
+      #return answer unless answer == ''
+      #puts "Enter a valid name!"
+    #end
+  end
+end
+
+class Computer < Player
+  def select_name
+    ["Benny", "Timmy", "Mr. Biggles"].sample
   end
 end
 
@@ -163,14 +197,14 @@ class TTTGame
   attr_reader :board, :human, :computer
 
   def initialize
-    @board = Board.new
-    @human = Player.new(HUMAN_MARKER)
-    @computer = Player.new(COMPUTER_MARKER)
-    @current_marker = FIRST_TO_MOVE
     display_welcome_message
+    @board = Board.new
+    @human = Human.new(HUMAN_MARKER)
+    @computer = Computer.new(COMPUTER_MARKER)
+    @current_marker = FIRST_TO_MOVE
   end
 
-  def play
+  def play    
     clear
 
     loop do
