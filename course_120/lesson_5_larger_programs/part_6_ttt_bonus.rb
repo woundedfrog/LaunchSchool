@@ -79,6 +79,8 @@ module Displayable
     else
       format_display("It's a tie!")
     end
+    center_message("Press any key to continue!")
+    gets.chomp
   end
 
   def display_play_again_message
@@ -184,6 +186,7 @@ end
 
 class Player
   attr_reader :marker, :name, :score
+  attr_writer :score
 
   def initialize(marker)
     @marker = marker
@@ -219,6 +222,7 @@ class TTTGame
   HUMAN_MARKER = "X"
   COMPUTER_MARKER = "O"
   FIRST_TO_MOVE = HUMAN_MARKER
+  WIN_SCORE = 3
 
   attr_reader :board, :human, :computer
 
@@ -244,9 +248,13 @@ class TTTGame
 
       update_scores(board.winning_marker)
       display_result
-      break unless play_again?
+      if human.score == WIN_SCORE  || computer.score == WIN_SCORE
+        break unless play_again?
+        display_play_again_message
+        human.score = 0
+        computer.score = 0
+      end
       reset
-      display_play_again_message
     end
 
     display_goodbye_message
@@ -285,14 +293,19 @@ class TTTGame
   end
 
   def update_scores(marker)
-    binding.pry
     human.marker == marker ? human.score_update : computer.score_update
   end
 
   def play_again?
     answer = nil
+    clear
+    if human.score == 3
+      format_display("Congrats! You beat the computer!")
+    else
+      format_Display("Too bad! The computer won!")
+    end
     loop do
-      puts "Would you like to play again? (y/n)"
+      center_message("Would you like to play again? (y/n)")
       answer = gets.chomp.downcase
       break if ['y', 'n'].include?(answer)
       puts "Sorry, must be y or n"
