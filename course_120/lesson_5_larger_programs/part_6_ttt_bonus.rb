@@ -135,18 +135,18 @@ class Board
 
   def risked_square
     WINNING_LINES.each do |line|
-      if @squares[line[1]].marker == "X" && @squares[line[2]].marker == "X" 
-        return 3
-      elsif @squares[line[1]].marker == "X" && @squares[line[3]].marker == "X"
-        return 2
-      elsif @squares[line[2]].marker == "X" &&
-      @squares[line[3]].marker == "X" 
-        return 1
+      if @squares[line[0]].marker == "X" && @squares[line[1]].marker == "X" 
+        return line[2]
+      elsif @squares[line[0]].marker == "X" && @squares[line[2]].marker == "X"
+        return line[1]
+      elsif @squares[line[1]].marker == "X" &&
+      @squares[line[2]].marker == "X" 
+        return line[0]
       else
-        return nil
+        next
       end
     end
-    binding.pry
+    return nil
     #@squares.keys.select { |key| @squares[key].marker == "X" }
   end
 
@@ -264,7 +264,7 @@ class TTTGame
       loop do
         current_player_moves
         break if board.someone_won? || board.full?
-        clear_screen_and_display_board if human_turn?
+        clear_screen_and_display_board# if human_turn?
       end
 
       update_scores(board.winning_marker)
@@ -312,8 +312,6 @@ class TTTGame
   def computer_moves
     square = find_risk_square
     if square != nil
-      
-    binding.pry
       board[square] = computer.marker
     else
       board[board.unmarked_keys.sample] = computer.marker
