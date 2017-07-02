@@ -2,14 +2,16 @@ require 'pry'
 
 class Board
   WINNING_LINES = [[1, 2, 3], [4, 5, 6], [7, 8, 9]] + # rows
-  [[1, 4, 7], [2, 5, 8], [3, 6, 9]] + # cols
-  [[1, 5, 9], [3, 5, 7]] # diagonals
+                  [[1, 4, 7], [2, 5, 8], [3, 6, 9]] + # cols
+                  [[1, 5, 9], [3, 5, 7]] # diagonals
 
   def initialize
-    #@squares = Hash.new(Square.new(INITIAL_MARKER))
+    # @squares = Hash.new(Square.new(INITIAL_MARKER))
     @squares = {}
     reset
   end
+
+  # rubocop:disable Metrics/AbcSize
 
   def draw
     puts "     |     |"
@@ -63,7 +65,6 @@ class Board
     return false if markers.size != 3
     markers.min == markers.max
   end
-
 end
 
 class Square
@@ -168,7 +169,7 @@ class TTTGame
   end
 
   def human_moves
-    puts "Choose a square (#{board.unmarked_keys.join(", ")}): "
+    puts "Choose a square (#{board.unmarked_keys.join(', ')}): "
     square = nil
     loop do
       square = gets.chomp.to_i
