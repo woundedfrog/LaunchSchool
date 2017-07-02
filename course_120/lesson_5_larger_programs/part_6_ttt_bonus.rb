@@ -125,8 +125,29 @@ class Board
     @squares[num].marker = marker
   end
 
+  def [](num)
+    @squares[num]
+  end
+
   def unmarked_keys
     @squares.keys.select { |key| @squares[key].unmarked? }
+  end
+
+  def risked_square
+    WINNING_LINES.each do |line|
+      if @squares[line[1]].marker == "X" && @squares[line[2]].marker == "X" 
+        return 3
+      elsif @squares[line[1]].marker == "X" && @squares[line[3]].marker == "X"
+        return 2
+      elsif @squares[line[2]].marker == "X" &&
+      @squares[line[3]].marker == "X" 
+        return 1
+      else
+        return nil
+      end
+    end
+    binding.pry
+    #@squares.keys.select { |key| @squares[key].marker == "X" }
   end
 
   def full?
@@ -289,7 +310,18 @@ class TTTGame
   end
 
   def computer_moves
-    board[board.unmarked_keys.sample] = computer.marker
+    square = find_risk_square
+    if square != nil
+      
+    binding.pry
+      board[square] = computer.marker
+    else
+      board[board.unmarked_keys.sample] = computer.marker
+    end
+  end
+
+  def find_risk_square
+    board.risked_square
   end
 
   def update_scores(marker)
