@@ -1,5 +1,3 @@
-require 'pry'
-
 class String
   def yellow;         "\033[33m#{self}\033[0m" end
   def cyan;           "\033[36m#{self}\033[0m" end
@@ -311,7 +309,6 @@ class TTTGame
     square = find_risk_square(computer.marker)
     # defencive
     square = find_risk_square(human.marker) if square.nil?
-    # binding.pry
     if !square.nil?
       board[square] = computer.marker
     else
