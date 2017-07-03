@@ -1,27 +1,26 @@
 require 'pry'
 
 class String
-  def black;          "\033[30m#{self}\033[0m" end
-  def red;            "\033[31m#{self}\033[0m" end
-  def green;          "\033[32m#{self}\033[0m" end
+  # def black;          "\033[30m#{self}\033[0m" end
+  # def red;            "\033[31m#{self}\033[0m" end
+  # def green;          "\033[32m#{self}\033[0m" end
   def yellow;         "\033[33m#{self}\033[0m" end
-  def blue;           "\033[34m#{self}\033[0m" end
-  def magenta;        "\033[35m#{self}\033[0m" end
+  # def blue;           "\033[34m#{self}\033[0m" end
+  # def magenta;        "\033[35m#{self}\033[0m" end
   def cyan;           "\033[36m#{self}\033[0m" end
-  def gray;           "\033[37m#{self}\033[0m" end
+  # def gray;           "\033[37m#{self}\033[0m" end
 end
 
 module Displayable
   def format_display(*message)
-    puts ("=" * 80).cyan
+    puts(("=" * 80).cyan)
     center_message(*message)
-    puts ("=" * 80).cyan
+    puts(("=" * 80).cyan)
   end
 
   def center_message(*message)
     message.each do |line|
-      #binding.pry
-      puts " " * (40 - (line.size/2)) + line
+      puts " " * (40 - (line.size / 2)) + line
     end
   end
 
@@ -133,21 +132,25 @@ class Board
     @squares.keys.select { |key| @squares[key].unmarked? }
   end
 
-  def risked_square
+  def risked_square(pl_marker)
     WINNING_LINES.each do |line|
-      if @squares[line[0]].marker == "X" && @squares[line[1]].marker == "X" 
+      if (@squares[line[0]].marker == pl_marker) &&
+         (@squares[line[1]].marker == pl_marker) &&
+         (@squares[line[2]].marker == " ")
         return line[2]
-      elsif @squares[line[0]].marker == "X" && @squares[line[2]].marker == "X"
+      elsif (@squares[line[0]].marker == pl_marker) &&
+            (@squares[line[2]].marker == pl_marker) &&
+            (@squares[line[1]].marker == " ")
         return line[1]
-      elsif @squares[line[1]].marker == "X" &&
-      @squares[line[2]].marker == "X" 
+      elsif (@squares[line[1]].marker == pl_marker) &&
+            (@squares[line[2]].marker == pl_marker) &&
+            (@squares[line[0]].marker == " ")
         return line[0]
       else
         next
       end
     end
-    return nil
-    #@squares.keys.select { |key| @squares[key].marker == "X" }
+    nil
   end
 
   def full?
@@ -161,7 +164,6 @@ class Board
   def winning_marker
     WINNING_LINES.each do |line|
       squares = @squares.values_at(*line)
-
       if three_identical_markers?(squares)
         return squares.first.marker
       end
@@ -255,7 +257,7 @@ class TTTGame
     @current_marker = FIRST_TO_MOVE
   end
 
-  def play    
+  def play
     clear
 
     loop do
@@ -264,12 +266,12 @@ class TTTGame
       loop do
         current_player_moves
         break if board.someone_won? || board.full?
-        clear_screen_and_display_board# if human_turn?
+        clear_screen_and_display_board # if human_turn?
       end
 
       update_scores(board.winning_marker)
       display_result
-      if human.score == WIN_SCORE  || computer.score == WIN_SCORE
+      if human.score == WIN_SCORE || computer.score == WIN_SCORE
         break unless play_again?
         display_play_again_message
         human.score = 0
@@ -308,18 +310,35 @@ class TTTGame
 
     board[square] = human.marker
   end
+  # check if offensive win available.
+  # if true
+  # offensive move
+  # elsif offensive win unavailable
+  # if square at risk == true
+  # defend
+  # else
+  # make middle move.
+  # or random move
+  # end
+  # end
 
   def computer_moves
-    square = find_risk_square
-    if square != nil
+    # offensive
+    square = find_risk_square(computer.marker)
+    # defencive
+    square = find_risk_square(human.marker) if square.nil?
+    # binding.pry
+    if !square.nil?
       board[square] = computer.marker
     else
+      # middle if possible, else random
+      return board[5] = computer.marker if board[5].marker == " "
       board[board.unmarked_keys.sample] = computer.marker
     end
   end
 
-  def find_risk_square
-    board.risked_square
+  def find_risk_square(pl_marker)
+    board.risked_square(pl_marker)
   end
 
   def update_scores(marker)
