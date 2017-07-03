@@ -1,14 +1,8 @@
 require 'pry'
 
 class String
-  # def black;          "\033[30m#{self}\033[0m" end
-  # def red;            "\033[31m#{self}\033[0m" end
-  # def green;          "\033[32m#{self}\033[0m" end
   def yellow;         "\033[33m#{self}\033[0m" end
-  # def blue;           "\033[34m#{self}\033[0m" end
-  # def magenta;        "\033[35m#{self}\033[0m" end
   def cyan;           "\033[36m#{self}\033[0m" end
-  # def gray;           "\033[37m#{self}\033[0m" end
 end
 
 module Displayable
@@ -84,6 +78,8 @@ module Displayable
 
   def display_play_again_message
     format_display("Let's play again!")
+    puts "Press any key to continue!"
+    gets.chomp
   end
 
   def clear
@@ -273,7 +269,6 @@ class TTTGame
       display_result
       if human.score == WIN_SCORE || computer.score == WIN_SCORE
         break unless play_again?
-        display_play_again_message
         human.score = 0
         computer.score = 0
       end
@@ -310,17 +305,6 @@ class TTTGame
 
     board[square] = human.marker
   end
-  # check if offensive win available.
-  # if true
-  # offensive move
-  # elsif offensive win unavailable
-  # if square at risk == true
-  # defend
-  # else
-  # make middle move.
-  # or random move
-  # end
-  # end
 
   def computer_moves
     # offensive
@@ -342,6 +326,7 @@ class TTTGame
   end
 
   def update_scores(marker)
+    return if marker.nil?
     human.marker == marker ? human.score_update : computer.score_update
   end
 
@@ -351,7 +336,7 @@ class TTTGame
     if human.score == 3
       format_display("Congrats! You beat the computer!")
     else
-      format_Display("Too bad! The computer won!")
+      format_display("Too bad! The computer won!")
     end
     loop do
       center_message("Would you like to play again? (y/n)")
@@ -360,6 +345,7 @@ class TTTGame
       puts "Sorry, must be y or n"
     end
 
+    display_play_again_message
     answer == 'y'
   end
 
