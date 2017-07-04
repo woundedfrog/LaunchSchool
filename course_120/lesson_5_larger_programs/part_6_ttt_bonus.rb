@@ -1,3 +1,5 @@
+require 'pry'
+
 class String
   def yellow;         "\033[33m#{self}\033[0m" end
   def cyan;           "\033[36m#{self}\033[0m" end
@@ -61,7 +63,6 @@ module Displayable
 
   def display_result
     clear_screen_and_display_board
-
     case board.winning_marker
     when human.marker
       format_display("You won!")
@@ -128,20 +129,8 @@ class Board
 
   def risked_square(pl_marker)
     WINNING_LINES.each do |line|
-      if (@squares[line[0]].marker == pl_marker) &&
-         (@squares[line[1]].marker == pl_marker) &&
-         (@squares[line[2]].marker == " ")
-        return line[2]
-      elsif (@squares[line[0]].marker == pl_marker) &&
-            (@squares[line[2]].marker == pl_marker) &&
-            (@squares[line[1]].marker == " ")
-        return line[1]
-      elsif (@squares[line[1]].marker == pl_marker) &&
-            (@squares[line[2]].marker == pl_marker) &&
-            (@squares[line[0]].marker == " ")
-        return line[0]
-      else
-        next
+      if line.count { |num| @squares[num].marker == pl_marker } == line.size - 1
+        return line.find { |key| @squares[key].marker == " " }
       end
     end
     nil
@@ -166,7 +155,6 @@ class Board
   end
 
   def reset
-    # @squares = Hash.new(Square.new(INITIAL_MARKER))
     (1..9).each { |key| @squares[key] = Square.new }
   end
 
@@ -260,15 +248,12 @@ class TTTGame
       loop do
         current_player_moves
         break if board.someone_won? || board.full?
-        clear_screen_and_display_board # if human_turn?
       end
 
       update_scores(board.winning_marker)
       display_result
-      if human.score == WIN_SCORE || computer.score == WIN_SCORE
+      if score_limit_reached?
         break unless play_again?
-        human.score = 0
-        computer.score = 0
       end
       reset
     end
@@ -278,6 +263,15 @@ class TTTGame
 
   private
 
+  def score_limit_reached?
+    if human.score == 3
+      format_display("Congrats! You beat the computer!")
+    else
+      format_display("Too bad! The computer won!")
+    end
+    human.score == WIN_SCORE || computer.score == WIN_SCORE
+  end
+
   def current_player_moves
     if human_turn?
       human_moves
@@ -286,6 +280,7 @@ class TTTGame
       computer_moves
       @current_marker = HUMAN_MARKER
     end
+    clear_screen_and_display_board
   end
 
   def human_turn?
@@ -300,8 +295,7 @@ class TTTGame
       break if board.unmarked_keys.include?(square)
       puts "Sorry not a valid choice."
     end
-
-    board[square] = human.marker
+    board[square].marker = human.marker
   end
 
   def computer_moves
@@ -330,11 +324,6 @@ class TTTGame
   def play_again?
     answer = nil
     clear
-    if human.score == 3
-      format_display("Congrats! You beat the computer!")
-    else
-      format_display("Too bad! The computer won!")
-    end
     loop do
       center_message("Would you like to play again? (y/n)")
       answer = gets.chomp.downcase
@@ -342,8 +331,11 @@ class TTTGame
       puts "Sorry, must be y or n"
     end
 
+    return if answer == 'n'
     display_play_again_message
-    answer == 'y'
+    human.score = 0
+    computer.score = 0
+    true
   end
 
   def reset
