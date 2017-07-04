@@ -226,7 +226,6 @@ class TTTGame
 
   HUMAN_MARKER = "X"
   COMPUTER_MARKER = "O"
-  FIRST_TO_MOVE = HUMAN_MARKER
   WIN_SCORE = 3
 
   attr_reader :board, :human, :computer
@@ -236,7 +235,7 @@ class TTTGame
     @board = Board.new
     @human = Human.new(HUMAN_MARKER)
     @computer = Computer.new(COMPUTER_MARKER)
-    @current_marker = FIRST_TO_MOVE
+    @current_marker = [HUMAN_MARKER, COMPUTER_MARKER]
   end
 
   def play
@@ -275,16 +274,15 @@ class TTTGame
   def current_player_moves
     if human_turn?
       human_moves
-      @current_marker = COMPUTER_MARKER
     else
       computer_moves
-      @current_marker = HUMAN_MARKER
     end
+    @current_marker.reverse!
     clear_screen_and_display_board
   end
 
   def human_turn?
-    @current_marker == HUMAN_MARKER
+    @current_marker.first == HUMAN_MARKER
   end
 
   def human_moves
@@ -340,7 +338,7 @@ class TTTGame
 
   def reset
     board.reset
-    @current_marker = FIRST_TO_MOVE
+    @current_marker.first
     clear
   end
 end
