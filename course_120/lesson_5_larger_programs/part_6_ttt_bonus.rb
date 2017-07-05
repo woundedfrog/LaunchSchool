@@ -23,7 +23,7 @@ module Displayable
   end
 
   def display_welcome_message
-    clear
+    clear_screen
     format_display("Welcome to Tic Tac Toe!")
     center_message("Press any key to continue.")
     gets.chomp
@@ -45,7 +45,7 @@ module Displayable
   end
 
   def clear_screen_and_display_board
-    clear
+    clear_screen
     display_board
   end
 
@@ -81,7 +81,7 @@ module Displayable
     gets.chomp
   end
 
-  def clear
+  def clear_screen
     (system 'clear') || (system 'cls')
   end
 end
@@ -193,8 +193,8 @@ class Player
   attr_reader :marker, :name, :score
   attr_writer :score
 
-  def initialize(marker)
-    @marker = marker
+  def initialize
+    @marker = choose_marker
     @name = select_name
     @score = 0
   end
@@ -213,19 +213,32 @@ class Human < Player
       puts "Enter a valid name!"
     end
   end
+
+  def choose_marker
+    marker = ''
+    loop do
+      puts "Choose a player marker."
+      marker = gets.chomp.upcase
+      break if marker != '' && marker.size == 1
+      puts "That's not a valid input."
+    end
+    marker
+  end
 end
 
 class Computer < Player
   def select_name
     ["Benny", "Timmy", "Mr. Biggles"].sample
   end
+
+  def choose_marker
+    ['O', 'V', 'C', 'B', '*'].sample
+  end
 end
 
 class TTTGame
   include Displayable
 
-  HUMAN_MARKER = "X"
-  COMPUTER_MARKER = "O"
   WIN_SCORE = 3
 
   attr_reader :board, :human, :computer
@@ -233,22 +246,20 @@ class TTTGame
   def initialize
     display_welcome_message
     @board = Board.new
-    @human = Human.new(HUMAN_MARKER)
-    @computer = Computer.new(COMPUTER_MARKER)
-    @current_marker = [HUMAN_MARKER, COMPUTER_MARKER]
+    @human = Human.new
+    @computer = Computer.new
+    @player_one = human.marker
+    @current_marker = [human.marker, computer.marker]
   end
 
   def play
-    clear
-
+    clear_screen
     loop do
       display_board
-
       loop do
         current_player_moves
         break if board.someone_won? || board.full?
       end
-
       update_scores(board.winning_marker)
       display_result
       if score_limit_reached?
@@ -256,7 +267,6 @@ class TTTGame
       end
       reset
     end
-
     display_goodbye_message
   end
 
@@ -277,12 +287,12 @@ class TTTGame
     else
       computer_moves
     end
-    @current_marker.reverse!
+    @current_marker.reverse! unless board.someone_won? || board.full?
     clear_screen_and_display_board
   end
 
   def human_turn?
-    @current_marker.first == HUMAN_MARKER
+    @current_marker.first == human.marker
   end
 
   def human_moves
@@ -321,7 +331,7 @@ class TTTGame
 
   def play_again?
     answer = nil
-    clear
+    clear_screen
     loop do
       center_message("Would you like to play again? (y/n)")
       answer = gets.chomp.downcase
@@ -338,8 +348,8 @@ class TTTGame
 
   def reset
     board.reset
-    @current_marker.first
-    clear
+    @current_marker = [human.marker, computer.marker]
+    clear_screen
   end
 end
 
