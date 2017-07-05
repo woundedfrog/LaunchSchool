@@ -3,6 +3,7 @@ require 'pry'
 class String
   def yellow;         "\033[33m#{self}\033[0m" end
   def cyan;           "\033[36m#{self}\033[0m" end
+  def red;            "\033[31m#{self}\033[0m" end
 end
 
 module Displayable
@@ -18,14 +19,18 @@ module Displayable
     end
   end
 
-  def colorize(string)
+  def colorize_yellow(string)
     puts string.center(80).yellow
+  end
+
+  def colorize_red(string)
+    puts string.center(80).red
   end
 
   def display_welcome_message
     clear_screen
     format_display("Welcome to Tic Tac Toe!")
-    center_message("Press any key to continue.")
+    colorize_red("Press Enter to continue.")
     gets.chomp
   end
 
@@ -52,13 +57,9 @@ module Displayable
   def display_board
     players = "#{human.name}: | #{computer.name}:"
     player_markers = "marker: #{human.marker} | marker: #{computer.marker}"
-    scores = score_board
+    scores = "score: #{human.score} | score: #{computer.score}"
     format_display(players, player_markers, scores)
     board.draw
-  end
-
-  def score_board
-    "score: #{human.score} | score: #{computer.score}"
   end
 
   def display_result
@@ -71,13 +72,13 @@ module Displayable
     else
       format_display("It's a tie!")
     end
-    center_message("Press any key to continue!")
+    colorize_red("Press Enter to continue!")
     gets.chomp
   end
 
   def display_play_again_message
     format_display("Let's play again!")
-    puts "Press any key to continue!"
+    colorize_red("Press Enter to continue!")
     gets.chomp
   end
 
@@ -101,17 +102,17 @@ class Board
 
   def draw
     puts ""
-    colorize("     |     |     ")
-    colorize("  #{@squares[1]}  |  #{@squares[2]}  |  #{@squares[3]}  ")
-    colorize("     |     |     ")
-    colorize("-----+-----+-----")
-    colorize("     |     |     ")
-    colorize("  #{@squares[4]}  |  #{@squares[5]}  |  #{@squares[6]}  ")
-    colorize("     |     |     ")
-    colorize("-----+-----+-----")
-    colorize("     |     |     ")
-    colorize("  #{@squares[7]}  |  #{@squares[8]}  |  #{@squares[9]}  ")
-    colorize("     |     |     ")
+    colorize_yellow("     |     |     ")
+    colorize_yellow("  #{@squares[1]}  |  #{@squares[2]}  |  #{@squares[3]}  ")
+    colorize_yellow("     |     |     ")
+    colorize_yellow("-----+-----+-----")
+    colorize_yellow("     |     |     ")
+    colorize_yellow("  #{@squares[4]}  |  #{@squares[5]}  |  #{@squares[6]}  ")
+    colorize_yellow("     |     |     ")
+    colorize_yellow("-----+-----+-----")
+    colorize_yellow("     |     |     ")
+    colorize_yellow("  #{@squares[7]}  |  #{@squares[8]}  |  #{@squares[9]}  ")
+    colorize_yellow("     |     |     ")
     puts ""
   end
 
@@ -194,7 +195,6 @@ class Player
   attr_writer :score
 
   def initialize
-    @marker = choose_marker
     @name = select_name
     @score = 0
   end
@@ -205,6 +205,11 @@ class Player
 end
 
 class Human < Player
+  def initialize
+    super
+    @marker = choose_marker
+  end
+
   def select_name
     loop do
       puts "Enter your name!"
@@ -227,12 +232,20 @@ class Human < Player
 end
 
 class Computer < Player
+  def initialize(marker)
+    super()
+    @marker = choose_marker(marker)
+  end
+
   def select_name
     ["Benny", "Timmy", "Mr. Biggles"].sample
   end
 
-  def choose_marker
-    ['O', 'V', 'C', 'B', '*'].sample
+  def choose_marker(marker)
+    loop do
+      mark = ['O', 'V', 'C', 'B', '*'].sample
+      return mark unless mark == marker
+    end
   end
 end
 
@@ -247,7 +260,7 @@ class TTTGame
     display_welcome_message
     @board = Board.new
     @human = Human.new
-    @computer = Computer.new
+    @computer = Computer.new(human.marker)
     @player_one = human.marker
     @current_marker = [human.marker, computer.marker]
   end
