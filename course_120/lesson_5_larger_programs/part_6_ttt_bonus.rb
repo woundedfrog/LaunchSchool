@@ -3,7 +3,7 @@ require 'pry'
 class String
   def yellow;         "\033[33m#{self}\033[0m" end
   def cyan;           "\033[36m#{self}\033[0m" end
-  def red;            "\033[31m#{self}\033[0m" end
+  def red;            "\e[41m#{self}\e[0m" end
 end
 
 module Displayable
