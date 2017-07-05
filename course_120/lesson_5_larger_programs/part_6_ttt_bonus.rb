@@ -7,7 +7,7 @@ class String
 end
 
 module Displayable
-  def format_display(*message)
+  def bannerize(*message)
     puts(("=" * 80).cyan)
     center_message(*message)
     puts(("=" * 80).cyan)
@@ -29,7 +29,7 @@ module Displayable
 
   def display_welcome_message
     clear_screen
-    format_display("Welcome to Tic Tac Toe!")
+    bannerize("Welcome to Tic Tac Toe!")
     colorize_red("Press Enter to continue.")
     gets.chomp
   end
@@ -46,7 +46,7 @@ module Displayable
   end
 
   def display_goodbye_message
-    format_display("Thank you for playing Tic Tac Toe! Goodbye!")
+    bannerize("Thank you for playing Tic Tac Toe! Goodbye!")
   end
 
   def clear_screen_and_display_board
@@ -58,7 +58,7 @@ module Displayable
     players = "#{human.name}: | #{computer.name}:"
     player_markers = "marker: #{human.marker} | marker: #{computer.marker}"
     scores = "score: #{human.score} | score: #{computer.score}"
-    format_display(players, player_markers, scores)
+    bannerize(players, player_markers, scores)
     board.draw
   end
 
@@ -66,18 +66,18 @@ module Displayable
     clear_screen_and_display_board
     case board.winning_marker
     when human.marker
-      format_display("You won!")
+      bannerize("You won!")
     when computer.marker
-      format_display("Computer won!")
+      bannerize("Computer won!")
     else
-      format_display("It's a tie!")
+      bannerize("It's a tie!")
     end
     colorize_red("Press Enter to continue!")
     gets.chomp
   end
 
   def display_play_again_message
-    format_display("Let's play again!")
+    bannerize("Let's play again!")
     colorize_red("Press Enter to continue!")
     gets.chomp
   end
@@ -300,7 +300,7 @@ class TTTGame
   end
 
   def human_moves
-    format_display("Choose a square (#{joinor(board.unmarked_keys)}): ")
+    bannerize("Choose a square (#{joinor(board.unmarked_keys)}): ")
     square = nil
     loop do
       square = gets.chomp.to_i
@@ -335,9 +335,9 @@ class TTTGame
 
   def score_limit_reached?
     if human.score == 3
-      format_display("Congrats! You beat the computer!")
+      bannerize("Congrats! You beat the computer!")
     else
-      format_display("Too bad! The computer won!")
+      bannerize("Too bad! The computer won!")
     end
     human.score == WIN_SCORE || computer.score == WIN_SCORE
   end
@@ -346,7 +346,7 @@ class TTTGame
     answer = nil
     clear_screen
     loop do
-      center_message("Would you like to play again? (y/n)")
+      bannerize("Would you like to play again? (y/n)")
       answer = gets.chomp.downcase
       break if ['y', 'n'].include?(answer)
       puts "Sorry, must be y or n"
