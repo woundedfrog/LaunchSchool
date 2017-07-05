@@ -278,21 +278,12 @@ class TTTGame
       if score_limit_reached?
         break unless play_again?
       end
-      reset
+      game_reset
     end
     display_goodbye_message
   end
 
   private
-
-  def score_limit_reached?
-    if human.score == 3
-      format_display("Congrats! You beat the computer!")
-    else
-      format_display("Too bad! The computer won!")
-    end
-    human.score == WIN_SCORE || computer.score == WIN_SCORE
-  end
 
   def current_player_moves
     if human_turn?
@@ -342,6 +333,15 @@ class TTTGame
     human.marker == marker ? human.score_update : computer.score_update
   end
 
+  def score_limit_reached?
+    if human.score == 3
+      format_display("Congrats! You beat the computer!")
+    else
+      format_display("Too bad! The computer won!")
+    end
+    human.score == WIN_SCORE || computer.score == WIN_SCORE
+  end
+
   def play_again?
     answer = nil
     clear_screen
@@ -359,7 +359,7 @@ class TTTGame
     true
   end
 
-  def reset
+  def game_reset
     board.reset
     @current_marker = [human.marker, computer.marker]
     clear_screen
