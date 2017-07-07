@@ -57,8 +57,8 @@ module Displayable
   end
 
   def display_board
-    players = @players.map{ |pl| pl.name }.join(" || ")
-    pl_markers = @players.map { |pl| "Marker: #{pl.marker}" }.join(" || ") # "marker: #{player1.marker} | marker: #{player2.marker}"
+    players = @players.map { |pl| pl.name }.join(" || ")
+    pl_markers = @players.map { |pl| "Marker: #{pl.marker}" }.join(" || ")
     scores = @players.map { |pl| "score: #{pl.score}" }.join(" || ")
     bannerize(players, pl_markers, scores)
     board.draw
@@ -400,7 +400,6 @@ class TTTGame
     current_player.move(players, board) if players[0].instance_of?(Computer)
     @current_player = turns[1..-1] + [turns[0]]
     clear_screen_and_display_board
-    sleep 1
   end
 
   def update_scores(marker)
