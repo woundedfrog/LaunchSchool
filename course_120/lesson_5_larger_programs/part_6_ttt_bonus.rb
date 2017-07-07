@@ -97,7 +97,6 @@ class Board
 
   def initialize
     @squares = {}
-    choose_board_size
     reset
   end
 
@@ -106,7 +105,7 @@ class Board
     sqr_num.upto(lines) do |num|
       square_row << "  #{@squares[num]}  "
     end
-    puts square_row.join("|") # .center(80)
+    puts square_row.join("|")
   end
 
   def draw_verticals(lines)
@@ -114,7 +113,7 @@ class Board
     lines.times do
       row << "     "
     end
-    puts row.join("|") # .center(80)
+    puts row.join("|")
   end
 
   def draw_border_line(lines)
@@ -122,11 +121,11 @@ class Board
     lines.times do
       row << "-----"
     end
-    puts row.join("+") # .center(80)
+    puts row.join("+")
   end
 
   def draw
-    lines = @board_size
+    lines = 3
     sqr_num = 1
     puts ""
     1.upto(lines) do |count|
@@ -178,25 +177,10 @@ class Board
   end
 
   def reset
-    (1..@square_num).each { |key| @squares[key] = Square.new }
+    (1..9).each { |key| @squares[key] = Square.new }
   end
 
   private
-
-  def choose_board_size
-    answer = nil
-    puts "Choose a board size: (1, 2, or 3)"
-    puts "(1): 3x3 - matches needed => 3"
-    puts "(2): 5x5 - matches needed => 4"
-    puts "(3): 9x9 - matches needed => 5"
-    loop do
-      answer = gets.chomp.to_i
-      break if [1, 2, 3].include?(answer)
-      puts "That's not a valid option!"
-    end
-    grids = [[nil], [9, 3], [25, 5], [81, 9]]
-    @square_num, @board_size = grids[answer]
-  end
 
   def three_identical_markers?(squares)
     markers = squares.select(&:marked?).collect(&:marker)
