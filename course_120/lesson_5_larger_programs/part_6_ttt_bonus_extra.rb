@@ -25,15 +25,15 @@ module Displayable
     puts string.center(80).yellow
   end
 
-  def colorize_red(string)
+  def continue?(string)
     puts string.center(80).red
+    gets
   end
 
   def display_welcome_message
     clear_screen
     bannerize("Welcome to Tic Tac Toe!")
-    colorize_red("Press Enter to continue.")
-    gets.chomp
+    continue?("Press Enter to continue.")
   end
 
   def joinor(arr, delimiter=', ', word='or')
@@ -57,9 +57,9 @@ module Displayable
   end
 
   def display_board
-    players = "#{player1.name}: | #{player2.name}:"
-    pl_markers = "marker: #{player1.marker} | marker: #{player2.marker}"
-    scores = "score: #{player1.score} | score: #{player2.score}"
+    players = @players.map{ |pl| pl.name }.join(" || ")
+    pl_markers = @players.map { |pl| "Marker: #{pl.marker}" }.join(" || ") # "marker: #{player1.marker} | marker: #{player2.marker}"
+    scores = @players.map { |pl| "score: #{pl.score}" }.join(" || ")
     bannerize(players, pl_markers, scores)
     board.draw
   end
@@ -74,14 +74,12 @@ module Displayable
     else
       bannerize("It's a tie!")
     end
-    colorize_red("Press Enter to continue!")
-    gets.chomp
+    continue?("Press Enter to continue!")
   end
 
   def display_play_again_message
     bannerize("Let's play again!")
-    colorize_red("Press Enter to continue!")
-    gets.chomp
+    continue?("Press Enter to continue!")
   end
 
   def clear_screen
@@ -228,6 +226,8 @@ class Square
 end
 
 class Player
+  include Displayable
+
   attr_reader :marker, :name, :score
   attr_writer :score
 
@@ -270,6 +270,18 @@ class Human < Player
     end
     choice
   end
+
+  def move(players, board)
+    human_player = players[0]
+    bannerize("Choose a square (#{joinor(board.unmarked_keys)}): ")
+    square = nil
+    loop do
+      square = gets.chomp.to_i
+      break if board.unmarked_keys.include?(square)
+      puts "Sorry not a valid choice."
+    end
+    board[square].marker = human_player.marker
+  end
 end
 
 class Computer < Player
@@ -288,6 +300,29 @@ class Computer < Player
       @@used_markers.include?(choice) ? next : @@used_markers << choice
       return choice
     end
+  end
+
+  def move(players, board)
+    player1 = players[0].marker
+    players.drop(1).each do |player|
+      player2 = player.marker
+      # offensive
+      square = offensive_move(player1, board)
+      # deffensive
+      square = defensive_move(player2, board) if square.nil?
+      return board[square] = player1 if !square.nil?
+    end
+    # middle if possible, else random
+    return board[5] = player1 if board[5].marker == " "
+    board[board.unmarked_keys.sample] = player1
+  end
+
+  def offensive_move(player2, board)
+    board.risked_square(player2)
+  end
+
+  def defensive_move(player1, board)
+    board.risked_square(player1)
   end
 end
 
@@ -358,48 +393,14 @@ class TTTGame
   end
 
   def current_player_moves
-    turn_switch = @current_player
-    player = @current_player[0]
-    human_moves(player) if player.instance_of?(Human)
-    computer_moves(player) if player.instance_of?(Computer)
-    @current_player = turn_switch[1..-1] + [turn_switch[0]]
+    turns = @current_player
+    players = @current_player
+    current_player = @current_player[0]
+    current_player.move(players, board) if players[0].instance_of?(Human)
+    current_player.move(players, board) if players[0].instance_of?(Computer)
+    @current_player = turns[1..-1] + [turns[0]]
     clear_screen_and_display_board
     sleep 1
-  end
-
-  def human_moves(human_player)
-    bannerize("Choose a square (#{joinor(board.unmarked_keys)}): ")
-    square = nil
-    loop do
-      square = gets.chomp.to_i
-      break if board.unmarked_keys.include?(square)
-      puts "Sorry not a valid choice."
-    end
-    board[square].marker = human_player.marker
-  end
-
-  def computer_moves(current_player)
-    player1 = current_player.marker
-    grid = board
-    @current_player.drop(1).each do |player|
-      player2 = player.marker
-      # offensive
-      square = offensive_move(player2)
-      # defencive
-      square = defencive_move(player1) if square.nil?
-      return board[square] = player1 if !square.nil?
-    end
-    # middle if possible, else random
-    return grid[5] = player_1 if grid[5].marker == " "
-    grid[grid.unmarked_keys.sample] = player_1
-  end
-
-  def offensive_move(player2)
-    board.risked_square(player2)
-  end
-
-  def defencive_move(player1)
-    board.risked_square(player1)
   end
 
   def update_scores(marker)
@@ -410,9 +411,11 @@ class TTTGame
   def score_limit_reached?
     if player1.score == 3
       bannerize("Congrats! Player 1 is the winner!")
+      continue?("Press Enter to continue.")
       return true
     elsif player2.score == 3
       bannerize("Congrats! Player 2 is the winner!")
+      continue?("Press Enter to continue.")
       return true
     end
     false
@@ -420,7 +423,7 @@ class TTTGame
 
   def play_again?
     answer = nil
-    clear_screen
+    #clear_screen
     loop do
       bannerize("Would you like to play again? (y/n)")
       answer = gets.chomp.downcase
