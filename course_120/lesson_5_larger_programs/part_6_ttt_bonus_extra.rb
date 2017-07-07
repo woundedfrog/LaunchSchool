@@ -302,7 +302,7 @@ class TTTGame
     display_welcome_message
     @board = Board.new
     @players = player_num_and_type
-    @current_player = player_markers
+    @current_player = player_info
   end
 
   def play
@@ -329,10 +329,10 @@ class TTTGame
     answer = nil
     puts "Please choose the number of players and types: (1 - 4)"
     loop do
-      puts "(): 2 Players: human & computer"
-      puts "(): 2 Players: human & human"
-      puts "(): 2 Players: computer & computer"
-      puts "(): 2 Players: human, human, & computer"
+      puts "(1): 2 Players: human & computer"
+      puts "(2): 2 Players: human & human"
+      puts "(3): 2 Players: computer & computer"
+      puts "(4): 2 Players: human, human, & computer"
       answer = gets.chomp.to_i
       break if [1, 2, 3, 4].include?(answer)
       puts "That's not a valid input!"
@@ -351,7 +351,7 @@ class TTTGame
     player
   end
 
-  def player_markers
+  def player_info
     @players.map do |player|
       player
     end
@@ -359,23 +359,15 @@ class TTTGame
 
   def current_player_moves
     turn_switch = @current_player
-    if human_turn?
-      human_moves
-    else
-      computer_moves
-    end
+    player = @current_player[0]
+    human_moves(player) if player.instance_of?(Human)
+    computer_moves(player) if player.instance_of?(Computer)
     @current_player = turn_switch[1..-1] + [turn_switch[0]]
     clear_screen_and_display_board
+    sleep 1
   end
 
-  def human_turn?
-    if @current_player.first.instance_of?(Human)
-      return true
-    end
-    false
-  end
-
-  def human_moves
+  def human_moves(human_player)
     bannerize("Choose a square (#{joinor(board.unmarked_keys)}): ")
     square = nil
     loop do
@@ -383,26 +375,31 @@ class TTTGame
       break if board.unmarked_keys.include?(square)
       puts "Sorry not a valid choice."
     end
-    board[square].marker = @current_player.first.marker
+    board[square].marker = human_player.marker
   end
 
-  def computer_moves
-    computer_marker = player2.marker
-    human_marker = player1.marker
+  def computer_moves(current_player)
+    player1 = current_player.marker
     grid = board
-    # offensive
-    square = find_risk_square(computer_marker)
-    # defencive
-    square = find_risk_square(human_marker) if square.nil?
-
-    return board[square] = computer_marker if !square.nil?
+    @current_player.drop(1).each do |player|
+      player2 = player.marker
+      # offensive
+      square = offensive_move(player2)
+      # defencive
+      square = defencive_move(player1) if square.nil?
+      return board[square] = player1 if !square.nil?
+    end
     # middle if possible, else random
-    return grid[5] = computer_marker if grid[5].marker == " "
-    grid[grid.unmarked_keys.sample] = computer_marker
+    return grid[5] = player_1 if grid[5].marker == " "
+    grid[grid.unmarked_keys.sample] = player_1
   end
 
-  def find_risk_square(pl_marker)
-    board.risked_square(pl_marker)
+  def offensive_move(player2)
+    board.risked_square(player2)
+  end
+
+  def defencive_move(player1)
+    board.risked_square(player1)
   end
 
   def update_scores(marker)
