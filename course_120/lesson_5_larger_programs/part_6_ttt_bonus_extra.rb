@@ -226,9 +226,11 @@ class Board
   def winning_marker
     @winning_lines.each do |line|
       squares = @squares.values_at(*line)
-      p bingo_line?(squares)
-      return bingo_line?(squares)
+      if bingo_line?(squares)
+        return return_marker(squares)
+      end
     end
+    nil
   end
 
   def reset
@@ -254,12 +256,14 @@ class Board
 
   def bingo_line?(squares)
     markers = squares.select(&:marked?).collect(&:marker)
-     #if markers.size != win_score
-    if markers.any? { |x| markers.count(x) == win_score }
-      return markers.find { |x| markers.count(x) == win_score }
-    else
-      return false
-    end
+     #return false markers.size != win_score
+    markers.any? { |x| markers.count(x) == win_score }
+      #return markers.find { |x| markers.count(x) == win_score }
+  end
+
+  def return_marker(squares)
+    markers = squares.select(&:marked?).collect(&:marker)
+    markers.find { |x| markers.count(x) == win_score }
   end
 end
 
@@ -389,6 +393,8 @@ end
 class TTTGame
   include Displayable
 
+  WIN_LIMIT = 3
+
   attr_reader :board, :player1, :player2, :win_score
 
   def initialize
@@ -467,11 +473,11 @@ class TTTGame
   end
 
   def score_limit_reached?
-    if player1.score == 3
+    if player1.score == WIN_LIMIT
       bannerize("Congrats! Player 1 is the winner!")
       continue?("Press Enter to continue.")
       return true
-    elsif player2.score == 3
+    elsif player2.score == WIN_LIMIT
       bannerize("Congrats! Player 2 is the winner!")
       continue?("Press Enter to continue.")
       return true
