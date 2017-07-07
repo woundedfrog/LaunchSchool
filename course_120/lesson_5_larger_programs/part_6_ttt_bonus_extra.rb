@@ -282,6 +282,7 @@ class Player
   attr_writer :score
 
   @@used_markers = []
+  
   def initialize
     @name = select_name
     @score = 0
