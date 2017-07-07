@@ -15,7 +15,9 @@ module Displayable
 
   def center_message(*message)
     message.each do |line|
-      puts " " * (40 - (line.size / 2)) + line
+      size = 40 - (line.size / 2)
+      size = 0 if size < 0
+      puts " " * size + line
     end
   end
 
@@ -95,25 +97,45 @@ class Board
 
   def initialize
     @squares = {}
+    choose_board_size
     reset
   end
 
-  # rubocop:disable Metrics/AbcSize
+  def draw_squares(lines, sqr_num)
+    square_row = []
+    sqr_num.upto(lines) do |num|
+      square_row << "  #{@squares[num]}  "
+    end
+    puts square_row.join("|") # .center(80)
+  end
+
+  def draw_verticals(lines)
+    row = []
+    lines.times do
+      row << "     "
+    end
+    puts row.join("|") # .center(80)
+  end
+
+  def draw_border_line(lines)
+    row = []
+    lines.times do
+      row << "-----"
+    end
+    puts row.join("+") # .center(80)
+  end
 
   def draw
+    lines = @board_size
+    sqr_num = 1
     puts ""
-    colorize_yellow("     |     |     ")
-    colorize_yellow("  #{@squares[1]}  |  #{@squares[2]}  |  #{@squares[3]}  ")
-    colorize_yellow("     |     |     ")
-    colorize_yellow("-----+-----+-----")
-    colorize_yellow("     |     |     ")
-    colorize_yellow("  #{@squares[4]}  |  #{@squares[5]}  |  #{@squares[6]}  ")
-    colorize_yellow("     |     |     ")
-    colorize_yellow("-----+-----+-----")
-    colorize_yellow("     |     |     ")
-    colorize_yellow("  #{@squares[7]}  |  #{@squares[8]}  |  #{@squares[9]}  ")
-    colorize_yellow("     |     |     ")
-    puts ""
+    1.upto(lines) do |count|
+      draw_verticals(lines)
+      draw_squares((lines * count), sqr_num)
+      draw_verticals(lines)
+      draw_border_line(lines) unless count == lines
+      sqr_num += lines
+    end
   end
 
   def []=(num, marker)
@@ -156,10 +178,25 @@ class Board
   end
 
   def reset
-    (1..9).each { |key| @squares[key] = Square.new }
+    (1..@square_num).each { |key| @squares[key] = Square.new }
   end
 
   private
+
+  def choose_board_size
+    answer = nil
+    puts "Choose a board size: (1, 2, or 3)"
+    puts "(1): 3x3 - matches needed => 3"
+    puts "(2): 5x5 - matches needed => 4"
+    puts "(3): 9x9 - matches needed => 5"
+    loop do
+      answer = gets.chomp.to_i
+      break if [1, 2, 3].include?(answer)
+      puts "That's not a valid option!"
+    end
+    grids = [[nil], [9, 3], [25, 5], [81, 9]]
+    @square_num, @board_size = grids[answer]
+  end
 
   def three_identical_markers?(squares)
     markers = squares.select(&:marked?).collect(&:marker)
@@ -311,17 +348,17 @@ class TTTGame
   end
 
   def computer_moves
+    computer_marker = computer.marker
+    human_marker = human.marker
+    grid = board
     # offensive
-    square = find_risk_square(computer.marker)
+    square = find_risk_square(computer_marker)
     # defencive
-    square = find_risk_square(human.marker) if square.nil?
-    if !square.nil?
-      board[square] = computer.marker
-    else
-      # middle if possible, else random
-      return board[5] = computer.marker if board[5].marker == " "
-      board[board.unmarked_keys.sample] = computer.marker
-    end
+    square = find_risk_square(human_marker) if square.nil?
+    return board[square] = computer_marker if !square.nil?
+    # middle if possible, else random
+    return grid[5] = computer_marker if grid[5].marker == " "
+    grid[grid.unmarked_keys.sample] = computer_marker
   end
 
   def find_risk_square(pl_marker)
