@@ -57,7 +57,7 @@ module Displayable
   end
 
   def display_board
-    players = @players.map { |pl| pl.name }.join(" || ")
+    players = @players.map(&:name).join(" || ")
     pl_markers = @players.map { |pl| "Marker: #{pl.marker}" }.join(" || ")
     scores = @players.map { |pl| "score: #{pl.score}" }.join(" || ")
     bannerize(players, pl_markers, scores)
@@ -90,9 +90,6 @@ end
 class Board
   attr_reader :board_size
   include Displayable
-  #WINNING_LINES = [[1, 2, 3], [4, 5, 6], [7, 8, 9]] + # rows
-  #                [[1, 4, 7], [2, 5, 8], [3, 6, 9]] + # cols
-  #                [[1, 5, 9], [3, 5, 7]] # diagonals
 
   def initialize
     @squares = {}
@@ -106,7 +103,7 @@ class Board
     sqr_num.upto(lines) do |num|
       square_row << "  #{@squares[num]}  "
     end
-    puts square_row.join("|") # .center(80)
+    puts square_row.join("|").center(80)
   end
 
   def draw_verticals(lines)
@@ -114,7 +111,7 @@ class Board
     lines.times do
       row << "     "
     end
-    puts row.join("|") # .center(80)
+    puts row.join("|").center(80)
   end
 
   def draw_border_line(lines)
@@ -122,7 +119,7 @@ class Board
     lines.times do
       row << "-----"
     end
-    puts row.join("+") # .center(80)
+    puts row.join("+").center(80)
   end
 
   def draw
@@ -150,15 +147,16 @@ class Board
     @squares.keys.select { |key| @squares[key].unmarked? }
   end
 
+  # rubocop:disable Metrics/AbcSize
   def additional_rows(rows, size)
     if size == 5
       [[1, 7, 13, 19], [5, 11, 17, 23], [3, 7, 11, 15], [9, 13, 17, 21]]
     elsif size == 9
       (1...5).flat_map do |x|
-        [ (x...size).map     { |i| rows[i][i - x]},
-          (x...size).map     { |i| rows[i][-i + x - 1]},
-          (0...size - x).map { |i| rows[i][i + x]},
-          (0...size - x).map { |i| rows[i][-x - 1 - i]} ]
+        [(x...size).map { |i| rows[i][i - x] },
+         (x...size).map { |i| rows[i][-i + x - 1] },
+         (0...size - x).map { |i| rows[i][i + x] },
+         (0...size - x).map { |i| rows[i][-x - 1 - i] }]
       end
     else
       []
@@ -172,10 +170,10 @@ class Board
   def calculate_win_diagonals(rows, size)
     [(0...size).map { |i| rows[i][i] },
      (0...size).map { |i| rows[i][size - 1 - i] }] +
-     additional_rows(rows, size)
+      additional_rows(rows, size)
   end
 
-  def calculate_win_cols(rows, size)
+  def calculate_win_cols(rows)
     rows.first.zip(*rows[1..-1])
   end
 
@@ -183,19 +181,9 @@ class Board
     size = @board_size
     sq_nums = (1..size**2).to_a
     rows = calculate_win_rows(sq_nums, size)
-    cols = calculate_win_cols(rows, size)
+    cols = calculate_win_cols(rows)
     diagonals = calculate_win_diagonals(rows, size)
     rows + cols + diagonals
-    #stepper = 1
-    #lines = []
-    #1.upto(size) do |n|
-    #  bingo = []
-    #  (1..size).step(stepper).each do |square|
-    #    bingo << square
-    #  end
-    #  lines << bingo
-    #  stepper += size
-    #end
   end
 
   def win_score
@@ -241,7 +229,7 @@ class Board
 
   def choose_board_size
     answer = nil
-    puts "Choose a board size: (1, 2, or 3)"
+    puts "Choose a board size: (1, 2, or 3)".yellow
     puts "(1): 3x3 - matches needed => 3"
     puts "(2): 5x5 - matches needed => 4"
     puts "(3): 9x9 - matches needed => 5"
@@ -256,9 +244,7 @@ class Board
 
   def bingo_line?(squares)
     markers = squares.select(&:marked?).collect(&:marker)
-     #return false markers.size != win_score
     markers.any? { |x| markers.count(x) == win_score }
-      #return markers.find { |x| markers.count(x) == win_score }
   end
 
   def return_marker(squares)
@@ -314,7 +300,7 @@ class Human < Player
 
   def select_name
     loop do
-      puts "Enter your name!"
+      puts "Enter your name!".yellow
       answer = gets.chomp.capitalize
       return answer unless answer == ''
       puts "Enter a valid name!"
@@ -324,7 +310,7 @@ class Human < Player
   def choose_marker
     choice = ''
     loop do
-      puts "Choose a player marker."
+      puts "Choose a player marker.".yellow
       choice = gets.chomp.upcase
       if choice != '' && choice.size == 1 && !@@used_markers.include?(choice)
         @@used_markers << choice
@@ -402,7 +388,7 @@ class TTTGame
     @board = Board.new
     @win_score = board.win_score
     @players = player_num_and_type
-    @current_player = player_info
+    @current_player = @players
   end
 
   def play
@@ -427,7 +413,7 @@ class TTTGame
 
   def player_num_and_type
     answer = nil
-    puts "Please choose the number of players and types: (1 - 4)"
+    puts "Please choose the number of players and types: (1 - 4)".yellow
     loop do
       puts "(1): 2 Players: human & computer"
       puts "(2): 2 Players: human & human"
@@ -449,12 +435,6 @@ class TTTGame
       else [@player1 = Human.new, @player2 = Human.new, @player3 = Computer.new]
       end
     player
-  end
-
-  def player_info
-    @players.map do |player|
-      player
-    end
   end
 
   def current_player_moves
