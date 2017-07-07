@@ -88,14 +88,16 @@ module Displayable
 end
 
 class Board
+  attr_reader :board_size
   include Displayable
-  WINNING_LINES = [[1, 2, 3], [4, 5, 6], [7, 8, 9]] + # rows
-                  [[1, 4, 7], [2, 5, 8], [3, 6, 9]] + # cols
-                  [[1, 5, 9], [3, 5, 7]] # diagonals
+  #WINNING_LINES = [[1, 2, 3], [4, 5, 6], [7, 8, 9]] + # rows
+  #                [[1, 4, 7], [2, 5, 8], [3, 6, 9]] + # cols
+  #                [[1, 5, 9], [3, 5, 7]] # diagonals
 
   def initialize
     @squares = {}
-    choose_board_size
+    @square_num, @board_size = choose_board_size
+    @winning_lines = winning_lines
     reset
   end
 
@@ -148,8 +150,64 @@ class Board
     @squares.keys.select { |key| @squares[key].unmarked? }
   end
 
+  def additional_rows(rows, size)
+    if size == 5
+      [[1, 7, 13, 19], [5, 11, 17, 23], [3, 7, 11, 15], [9, 13, 17, 21]]
+    elsif size == 9
+      (1...5).flat_map do |x|
+        [ (x...size).map     { |i| rows[i][i - x]},
+          (x...size).map     { |i| rows[i][-i + x - 1]},
+          (0...size - x).map { |i| rows[i][i + x]},
+          (0...size - x).map { |i| rows[i][-x - 1 - i]} ]
+      end
+    else
+      []
+    end
+  end
+
+  def calculate_win_rows(arr, size)
+    arr.each_slice(size).to_a
+  end
+
+  def calculate_win_diagonals(rows, size)
+    [(0...size).map { |i| rows[i][i] },
+     (0...size).map { |i| rows[i][size - 1 - i] }] +
+     additional_rows(rows, size)
+  end
+
+  def calculate_win_cols(rows, size)
+    rows.first.zip(*rows[1..-1])
+  end
+
+  def winning_lines
+    size = @board_size
+    sq_nums = (1..size**2).to_a
+    rows = calculate_win_rows(sq_nums, size)
+    cols = calculate_win_cols(rows, size)
+    diagonals = calculate_win_diagonals(rows, size)
+    rows + cols + diagonals
+    #stepper = 1
+    #lines = []
+    #1.upto(size) do |n|
+    #  bingo = []
+    #  (1..size).step(stepper).each do |square|
+    #    bingo << square
+    #  end
+    #  lines << bingo
+    #  stepper += size
+    #end
+  end
+
+  def win_score
+    case board_size
+    when 3 then 3
+    when 5 then 4
+    when 9 then 5
+    end
+  end
+
   def risked_square(pl_marker)
-    WINNING_LINES.each do |line|
+    @winning_lines.each do |line|
       if line.count { |num| @squares[num].marker == pl_marker } == line.size - 1
         return line.find { |key| @squares[key].marker == " " }
       end
@@ -166,13 +224,11 @@ class Board
   end
 
   def winning_marker
-    WINNING_LINES.each do |line|
+    @winning_lines.each do |line|
       squares = @squares.values_at(*line)
-      if three_identical_markers?(squares)
-        return squares.first.marker
-      end
+      p bingo_line?(squares)
+      return bingo_line?(squares)
     end
-    nil
   end
 
   def reset
@@ -193,13 +249,17 @@ class Board
       puts "That's not a valid option!"
     end
     grids = [[nil], [9, 3], [25, 5], [81, 9]]
-    @square_num, @board_size = grids[answer]
+    grids[answer]
   end
 
-  def three_identical_markers?(squares)
+  def bingo_line?(squares)
     markers = squares.select(&:marked?).collect(&:marker)
-    return false if markers.size != 3
-    markers.min == markers.max
+     #if markers.size != win_score
+    if markers.any? { |x| markers.count(x) == win_score }
+      return markers.find { |x| markers.count(x) == win_score }
+    else
+      return false
+    end
   end
 end
 
@@ -329,13 +389,12 @@ end
 class TTTGame
   include Displayable
 
-  WIN_SCORE = 3
-
-  attr_reader :board, :player1, :player2
+  attr_reader :board, :player1, :player2, :win_score
 
   def initialize
     display_welcome_message
     @board = Board.new
+    @win_score = board.win_score
     @players = player_num_and_type
     @current_player = player_info
   end
@@ -422,7 +481,6 @@ class TTTGame
 
   def play_again?
     answer = nil
-    #clear_screen
     loop do
       bannerize("Would you like to play again? (y/n)")
       answer = gets.chomp.downcase
