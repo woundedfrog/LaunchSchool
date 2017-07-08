@@ -204,15 +204,15 @@ class Board
   def draw_verticals(lines, sqr_num)
     row = []
     if sqr_num == " "
-      1.upto(lines) do |num|
-          row << "     "
+      1.upto(lines) do
+        row << "     "
       end
     else
       sqr_num.upto(lines) do |num|
         if @squares[num].marker == " "
-        row << "#{(" " * (5 - num.to_s.size))}#{num}"
+          row << "#{(' ' * (5 - num.to_s.size))}#{num}"
         else
-        row << "     "  if @squares[num].marker != " "
+          row << "     " if @squares[num].marker != " "
         end
       end
     end
