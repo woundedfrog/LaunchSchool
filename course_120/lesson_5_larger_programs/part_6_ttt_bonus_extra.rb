@@ -6,6 +6,10 @@ class String
   def red;            "\e[41m#{self}\e[0m" end
 end
 
+########################################
+#          DISPLAY MESSAGES
+########################################
+
 module Displayable
   def bannerize(*message)
     puts(("=" * 80).cyan)
@@ -87,13 +91,18 @@ module Displayable
   end
 end
 
+########################################
+#             BOARD Class
+########################################
+
 class Board
-  attr_reader :board_size
   include Displayable
+
+  attr_reader :board_size
 
   def initialize
     @squares = {}
-    @square_num, @board_size = choose_board_size
+    @square_total, @board_size = choose_board_size
     @winning_lines = winning_lines
     reset
   end
@@ -149,10 +158,9 @@ class Board
 
   # rubocop:disable Metrics/AbcSize
   def additional_rows(rows, size)
-    if size == 5
-      [[1, 7, 13, 19], [5, 11, 17, 23], [3, 7, 11, 15], [9, 13, 17, 21]]
-    elsif size == 9
-      (1...5).flat_map do |x|
+    additional = []
+      if size == 9
+      additional = (1...5).flat_map do |x|
         [(x...size).map { |i| rows[i][i - x] },
          (x...size).map { |i| rows[i][-i + x - 1] },
          (0...size - x).map { |i| rows[i][i + x] },
@@ -193,14 +201,39 @@ class Board
     when 9 then 5
     end
   end
+# checks each_con(depending on board size).
+#  # if there is a match, then it finds the empty square. 
+#      #returns that square UNLESS the square is in an each_con and the markers don't match the needed count.
+#      # e.g. if the line is ['x','x',x',' ',' '] then it will select the 4th place.
+#      #       if the line is [' ','x','x','x','o'] then it will select the 1st place.
+#      #   but if the lines is ['x','x',x','0',' '] then it should not return the 5th square.
+#          #this is because the the last each_con (consisting of 4 spaces) doesn't include 3 matches
 
-  def risked_square(pl_marker)
+  def risk_line(pl_marker)
     @winning_lines.each do |line|
-      if line.count { |num| @squares[num].marker == pl_marker } == line.size - 1
-        return line.find { |key| @squares[key].marker == " " }
+      line.each_cons(win_score) do |bingo|
+        @board_size == 3 ? group_size = win_score - 1 : group_size = win_score - 2
+      if bingo.count { |num| @squares[num].marker == pl_marker } >= (group_size)
+        return bingo.find { |key| @squares[key].marker == " " } if @squares.values_at(*bingo).map { |x| x.marker }.include?(" ") &&  confirm_grouping(bingo, pl_marker)
+      end
+        next
       end
     end
     nil
+  end
+
+  def confirm_grouping(bingo, pl_marker)
+    1.upto(win_score) do |i|
+      @squares.values_at(*bingo).map { |x| x.marker }.each_cons(win_score - 1) do |x|
+        return true if x.uniq.size == 2 && x.uniq.include?(" ") && x.uniq.include?(pl_marker) && x.count(pl_marker) == (win_score - i)
+        # Maybe find and return the " " square in here and use/return that square in the riskline method
+      end
+    end
+    nil
+  end
+
+  def risked_square(pl_marker)
+    risk_line(pl_marker)
   end
 
   def full?
@@ -208,7 +241,7 @@ class Board
   end
 
   def someone_won?
-    !!winning_marker
+   return !!winning_marker
   end
 
   def winning_marker
@@ -222,7 +255,7 @@ class Board
   end
 
   def reset
-    (1..@square_num).each { |key| @squares[key] = Square.new }
+    (1..@square_total).each { |key| @squares[key] = Square.new }
   end
 
   private
@@ -243,15 +276,29 @@ class Board
   end
 
   def bingo_line?(squares)
-    markers = squares.select(&:marked?).collect(&:marker)
-    markers.any? { |x| markers.count(x) == win_score }
+    markers = squares.select(&:marker).collect(&:marker)
+    markers.any? do |x|
+      next if x == " "
+      markers.each_cons(win_score) do |row|
+        return true if row.count(x) == win_score 
+      end
+    end
+    false
   end
 
   def return_marker(squares)
-    markers = squares.select(&:marked?).collect(&:marker)
-    markers.find { |x| markers.count(x) == win_score }
+    markers = squares.select(&:marker).collect(&:marker)
+    markers.uniq.each do |x|
+      return x if markers.count(x) == win_score
+      puts "didn't pass" # this is a debuggin puts. It shows when the above fails.
+    end
+    nil
   end
 end
+
+########################################
+#             SQUARE Class
+########################################
 
 class Square
   INITIAL_MARKER = " "
@@ -275,6 +322,10 @@ class Square
   end
 end
 
+########################################
+#             PLAYER Class
+########################################
+
 class Player
   include Displayable
 
@@ -282,7 +333,7 @@ class Player
   attr_writer :score
 
   @@used_markers = []
-  
+
   def initialize
     @name = select_name
     @score = 0
@@ -292,6 +343,10 @@ class Player
     @score += 1
   end
 end
+
+########################################
+#             HUMAN Class
+########################################
 
 class Human < Player
   def initialize
@@ -335,6 +390,10 @@ class Human < Player
   end
 end
 
+########################################
+#             COMPUTER Class
+########################################
+
 class Computer < Player
   def initialize
     super()
@@ -354,6 +413,7 @@ class Computer < Player
   end
 
   def move(players, board)
+    #sleep 1
     player1 = players[0].marker
     players.drop(1).each do |player|
       player2 = player.marker
@@ -364,7 +424,12 @@ class Computer < Player
       return board[square] = player1 if !square.nil?
     end
     # middle if possible, else random
-    return board[5] = player1 if board[5].marker == " "
+    case board::board_size
+    when 3 then return board[5] = player1 if board[5].marker == " "
+    when 5 then return board[13] = player1 if board[13].marker == " "
+    when 9 then return board[41] = player1 if board[41].marker == " "
+    end
+    #return board[5] = player1 if board[5].marker == " "
     board[board.unmarked_keys.sample] = player1
   end
 
@@ -377,10 +442,14 @@ class Computer < Player
   end
 end
 
+########################################
+#            GAME Class
+########################################
+
 class TTTGame
   include Displayable
 
-  WIN_LIMIT = 3
+  WIN_LIMIT = 6
 
   attr_reader :board, :player1, :player2, :win_score
 
@@ -439,11 +508,11 @@ class TTTGame
   end
 
   def current_player_moves
+    puts  "#{@current_player[0].name}'s move".center(80)
     turns = @current_player
-    players = @current_player
     current_player = @current_player[0]
-    current_player.move(players, board) if players[0].instance_of?(Human)
-    current_player.move(players, board) if players[0].instance_of?(Computer)
+    current_player.move(@current_player, board)
+
     @current_player = turns[1..-1] + [turns[0]]
     clear_screen_and_display_board
   end
