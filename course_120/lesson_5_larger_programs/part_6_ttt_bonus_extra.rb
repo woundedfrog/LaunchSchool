@@ -113,9 +113,9 @@ class Board
     sqr_num = 1
     puts ""
     1.upto(lines) do |count|
-      draw_verticals(lines)
+      draw_verticals(lines, " ")
       draw_squares((lines * count), sqr_num)
-      draw_verticals(lines)
+      draw_verticals(lines * count, sqr_num)
       draw_border_line(lines) unless count == lines
       sqr_num += lines
     end
@@ -201,12 +201,22 @@ class Board
     puts square_row.join("|").center(80)
   end
 
-  def draw_verticals(lines)
+  def draw_verticals(lines, sqr_num)
     row = []
-    lines.times do
-      row << "     "
+    if sqr_num == " "
+      1.upto(lines) do |num|
+          row << "     "
+      end
+    else
+      sqr_num.upto(lines) do |num|
+        if @squares[num].marker == " "
+        row << "#{(" " * (5 - num.to_s.size))}#{num}"
+        else
+        row << "     "  if @squares[num].marker != " "
+        end
+      end
     end
-    puts row.join("|").center(80)
+    puts row.join("|").center(80).cyan
   end
 
   def draw_border_line(lines)
