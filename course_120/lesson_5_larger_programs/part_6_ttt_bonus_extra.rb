@@ -150,8 +150,8 @@ class Board
     end
   end
 
-  def risked_square(pl_marker)
-    risk_line(pl_marker)
+  def risked_square(pl_marker, used_markers)
+    risk_line(pl_marker, used_markers)
   end
 
   def full?
@@ -164,9 +164,9 @@ class Board
 
   def winning_marker
     @winning_lines.each do |line|
-      squares = @squares.values_at(*line)
-      if !!bingo_line?(squares)
-        return return_marker(squares)
+      line_values = @squares.values_at(*line)
+      if !!bingo_line?(line_values)
+        return return_marker(line_values)
       end
     end
     nil
@@ -201,20 +201,22 @@ class Board
     puts square_row.join("|").center(80)
   end
 
+  def draw_num_and_verticles(lines, sqr_num, row)
+    sqr_num.upto(lines) do |num|
+      row << if @squares[num].marker == " "
+               "#{(' ' * (5 - num.to_s.size))}#{num}"
+             else
+               "     "
+             end
+    end
+  end
+
   def draw_verticals(lines, sqr_num)
     row = []
     if sqr_num == " "
-      1.upto(lines) do
-        row << "     "
-      end
+      1.upto(lines) { row << "     " }
     else
-      sqr_num.upto(lines) do |num|
-        if @squares[num].marker == " "
-          row << "#{(' ' * (5 - num.to_s.size))}#{num}"
-        else
-          row << "     " if @squares[num].marker != " "
-        end
-      end
+      draw_num_and_verticles(lines, sqr_num, row)
     end
     puts row.join("|").center(80).cyan
   end
@@ -229,7 +231,9 @@ class Board
 
   # rubocop:disable Metrics/AbcSize
   def additional_rows(rows, size)
-    if size == 9
+    if size == 5
+      [[10, 14, 18, 22], [6, 12, 18, 24], [2, 8, 14, 20], [4, 8, 12, 16]]
+    elsif size == 9
       (1...5).flat_map do |x|
         [(x...size).map { |i| rows[i][i - x] },
          (x...size).map { |i| rows[i][-i + x - 1] },
@@ -241,6 +245,7 @@ class Board
     end
   end
 
+  # rubocop:enable Metrics/AbcSize
   def calculate_win_rows(arr, size)
     arr.each_slice(size).to_a
   end
@@ -255,53 +260,73 @@ class Board
     rows.first.zip(*rows[1..-1])
   end
 
-  def risk_line(pl_marker)
+  def risk_line(pl_marker, used_markers)
+    enemy_marker = used_markers - [pl_marker]
     @winning_lines.each do |line|
+      all_markers = @squares.values_at(*line).map(&:marker)
+      next if (all_markers - [enemy_marker]).count < board_size
       line.each_cons(win_score) do |bingo|
         group_size = @board_size == 3 ? win_score - 1 : win_score - 2
 
         if bingo.count { |num| @squares[num].marker == pl_marker } >= group_size
           if @squares.values_at(*bingo).map(&:marker).include?(" ") &&
              confirm_grouping(bingo, pl_marker)
-            return bingo.find { |key| @squares[key].marker == " " }
+            return valid_group(bingo, pl_marker)
           end
         end
-        next
+        # next
       end
     end
-
     nil
   end
 
   def confirm_grouping(bingo, pl_marker)
-    1.upto(win_score) do |i|
-      @squares.values_at(*bingo).map(&:marker).each_cons(win_score - 1) do |x|
-        return true if x.uniq.size == 2 && x.uniq.include?(" ") &&
-                       x.uniq.include?(pl_marker) &&
-                       x.count(pl_marker) == (win_score - i)
+    lines = @squares.values_at(*bingo).map(&:marker)
+    win_score.times do |i|
+      return true if lines.uniq.size == 2 && lines.uniq.include?(" ") &&
+                     lines.uniq.include?(pl_marker) &&
+                     lines.count(pl_marker) == (win_score - i)
+    end
+    nil
+  end
+
+  def valid_group(bingo, pl_marker)
+    win_score.times do |i|
+      bingo.each_cons(win_score - 1) do |x|
+        line = @squares.values_at(*x).map(&:marker)
+        if line.uniq.size == 2 && line.uniq.include?(" ") &&
+           line.uniq.include?(pl_marker) &&
+           line.count(pl_marker) == (win_score - i)
+          return x.find { |key| @squares[key].marker == " " }
+        end
       end
     end
     nil
   end
 
   def bingo_line?(squares)
-    markers = squares.map(&:marker)
-    markers.any? do |x|
-      next if x == " "
-      markers.each_cons(win_score) do |row|
-        return x if row.count(x) == win_score
+    mark = squares.map(&:marker)
+    result = nil
+    mark.uniq.each do |pl|
+      next if pl == " "
+      mark.each_cons(win_score) do |row|
+        if marker_is_uniq?(row, pl)
+          result = pl
+        end
+        break if result
       end
+      break if !result.nil?
     end
-    false
+    result
+  end
+
+  def marker_is_uniq?(row, pl)
+    row.uniq.size == 1 && !row.uniq.include?(" ") &&
+      row.uniq.include?(pl)
   end
 
   def return_marker(squares)
-    markers = squares.map(&:marker).uniq
-    markers.each do |x|
-      return x if x == bingo_line?(squares)
-      puts "didn't pass" # Debugging PUTS. It shows when the above fails.
-    end
-    nil
+    bingo_line?(squares)
   end
 end
 
@@ -338,7 +363,7 @@ end
 class Player
   include Displayable
 
-  attr_reader :marker, :name, :score
+  attr_reader :marker, :name, :score, :used_markers
   attr_writer :score
 
   @@used_markers = []
@@ -346,6 +371,10 @@ class Player
   def initialize
     @name = select_name
     @score = 0
+  end
+
+  def used_markers
+    @@used_markers
   end
 
   def score_update
@@ -422,7 +451,7 @@ class Computer < Player
   end
 
   def move(players, board)
-    # sleep 1
+    sleep 1
     player1 = players[0].marker
     players.drop(1).each do |player|
       player2 = player.marker
@@ -438,11 +467,11 @@ class Computer < Player
   end
 
   def offensive_move(player2, board)
-    board.risked_square(player2)
+    board.risked_square(player2, @@used_markers)
   end
 
   def defensive_move(player1, board)
-    board.risked_square(player1)
+    board.risked_square(player1, @@used_markers)
   end
 
   def choose_center_square(player1, board)
