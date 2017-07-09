@@ -295,6 +295,7 @@ class Board
   def valid_group(bingo, pl_marker)
     win_score.times do |i|
       bingo.each_cons(win_score - 1) do |x|
+        line = @squares.values_at(*x).map(&:marker)
         valid_bingo_marker(line, pl_marker, x, i)
       end
     end
@@ -302,11 +303,10 @@ class Board
   end
 
   def valid_bingo_marker(line, pl_marker, x, i)
-    line = @squares.values_at(*x).map(&:marker)
     if line.uniq.size == 2 && line.uniq.include?(" ") &&
        line.uniq.include?(pl_marker) &&
        line.count(pl_marker) == (win_score - i)
-      return x.find { |key| @squares[key].marker == " " }
+      x.find { |key| @squares[key].marker == " " }
     end
   end
 
