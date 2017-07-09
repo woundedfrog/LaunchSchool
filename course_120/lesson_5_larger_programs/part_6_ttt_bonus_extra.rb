@@ -265,19 +265,21 @@ class Board
     @winning_lines.each do |line|
       all_markers = @squares.values_at(*line).map(&:marker)
       next if (all_markers - [enemy_marker]).count < board_size
-      line.each_cons(win_score) do |bingo|
-        group_size = @board_size == 3 ? win_score - 1 : win_score - 2
-
-        if bingo.count { |num| @squares[num].marker == pl_marker } >= group_size
-          if @squares.values_at(*bingo).map(&:marker).include?(" ") &&
-             confirm_grouping(bingo, pl_marker)
-            return valid_group(bingo, pl_marker)
-          end
-        end
-        # next
-      end
+      scan_line_for_bingo(pl_marker, line)
     end
     nil
+  end
+
+  def scan_line_for_bingo(pl_marker, line)
+    line.each_cons(win_score) do |bingo|
+      group_size = @board_size == 3 ? win_score - 1 : win_score - 2
+      if bingo.count { |num| @squares[num].marker == pl_marker } >= group_size
+        if @squares.values_at(*bingo).map(&:marker).include?(" ") &&
+           confirm_grouping(bingo, pl_marker)
+          return valid_group(bingo, pl_marker)
+        end
+      end
+    end
   end
 
   def confirm_grouping(bingo, pl_marker)
@@ -293,15 +295,19 @@ class Board
   def valid_group(bingo, pl_marker)
     win_score.times do |i|
       bingo.each_cons(win_score - 1) do |x|
-        line = @squares.values_at(*x).map(&:marker)
-        if line.uniq.size == 2 && line.uniq.include?(" ") &&
-           line.uniq.include?(pl_marker) &&
-           line.count(pl_marker) == (win_score - i)
-          return x.find { |key| @squares[key].marker == " " }
-        end
+        valid_bingo_marker(line, pl_marker, x, i)
       end
     end
     nil
+  end
+
+  def valid_bingo_marker(line, pl_marker, x, i)
+    line = @squares.values_at(*x).map(&:marker)
+    if line.uniq.size == 2 && line.uniq.include?(" ") &&
+       line.uniq.include?(pl_marker) &&
+       line.count(pl_marker) == (win_score - i)
+      return x.find { |key| @squares[key].marker == " " }
+    end
   end
 
   def bingo_line?(squares)
