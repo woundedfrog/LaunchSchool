@@ -150,8 +150,8 @@ class Board
     end
   end
 
-  def risked_square(pl_marker, used_markers)
-    risk_line(pl_marker, used_markers)
+  def risked_square(pl_marker, used_markers, defence)
+    risk_line(pl_marker, used_markers, defence)
   end
 
   def full?
@@ -260,54 +260,56 @@ class Board
     rows.first.zip(*rows[1..-1])
   end
 
-  def risk_line(pl_marker, used_markers)
-    enemy_marker = used_markers - [pl_marker]
-    @winning_lines.each do |line|
-      all_markers = @squares.values_at(*line).map(&:marker)
-      next if (all_markers - [enemy_marker]).count < board_size
-      scan_line_for_bingo(pl_marker, line)
+  def risk_line(pl_marker, used_markers, defence)
+    alternate_mark = used_markers - [pl_marker]
+    counter = defence == true ? 3 : 2
+    counter.times do |num|
+      @winning_lines.each do |line|
+        all_markers = @squares.values_at(*line).map(&:marker)
+        next if (all_markers - alternate_mark).count < win_score
+        # print [all_markers.count(pl_marker), (win_score - 1- num)]
+        # sleep 0.05
+        if all_markers.count(pl_marker) >= (win_score - 1 - num)
+          risked_square = scan_line_for_bingo(pl_marker, line)
+        end
+        return risked_square if !risked_square.nil?
+      end
     end
     nil
   end
 
   def scan_line_for_bingo(pl_marker, line)
-    line.each_cons(win_score) do |bingo|
-      group_size = @board_size == 3 ? win_score - 1 : win_score - 2
-      if bingo.count { |num| @squares[num].marker == pl_marker } >= group_size
-        if @squares.values_at(*bingo).map(&:marker).include?(" ") &&
-           confirm_grouping(bingo, pl_marker)
-          return valid_group(bingo, pl_marker)
+    size = win_score - 1
+    size = win_score if win_score == 5
+    size.times do |i|
+      line.each_cons(win_score) do |bingo|
+        square_values = @squares.values_at(*bingo).map(&:marker)
+        if square_values.count(pl_marker) >= (win_score - i) &&
+           confirm_grouping(pl_marker, square_values)
+          square = valid_bingo_marker(bingo)
+        end
+        return square if !!square
+      end
+    end
+    nil
+  end
+
+  def confirm_grouping(pl_marker, square_values)
+    return true if square_values.uniq.size == 2 &&
+                   square_values.uniq.include?(" ") &&
+                   square_values.uniq.include?(pl_marker)
+    nil
+  end
+
+  def valid_bingo_marker(bingo)
+    bingo.size.times do |i|
+      bingo.each_cons(bingo.size - i) do |x|
+        if @squares.values_at(*x).map(&:marker).count(" ") == 1
+          return x.find { |key| @squares[key].marker == " " }
         end
       end
     end
-  end
-
-  def confirm_grouping(bingo, pl_marker)
-    lines = @squares.values_at(*bingo).map(&:marker)
-    win_score.times do |i|
-      return true if lines.uniq.size == 2 && lines.uniq.include?(" ") &&
-                     lines.uniq.include?(pl_marker) &&
-                     lines.count(pl_marker) == (win_score - i)
-    end
     nil
-  end
-
-  def valid_group(bingo, pl_marker)
-    win_score.times do |i|
-      bingo.each_cons(win_score - 1) do |x|
-        line = @squares.values_at(*x).map(&:marker)
-        valid_bingo_marker(line, pl_marker, x, i)
-      end
-    end
-    nil
-  end
-
-  def valid_bingo_marker(line, pl_marker, x, i)
-    if line.uniq.size == 2 && line.uniq.include?(" ") &&
-       line.uniq.include?(pl_marker) &&
-       line.count(pl_marker) == (win_score - i)
-      x.find { |key| @squares[key].marker == " " }
-    end
   end
 
   def bingo_line?(squares)
@@ -319,9 +321,8 @@ class Board
         if marker_is_uniq?(row, pl)
           result = pl
         end
-        break if result
+        return result if result
       end
-      break if !result.nil?
     end
     result
   end
@@ -457,7 +458,7 @@ class Computer < Player
   end
 
   def move(players, board)
-    sleep 1
+    sleep 0.2
     player1 = players[0].marker
     players.drop(1).each do |player|
       player2 = player.marker
@@ -473,11 +474,11 @@ class Computer < Player
   end
 
   def offensive_move(player2, board)
-    board.risked_square(player2, @@used_markers)
+    board.risked_square(player2, @@used_markers, false)
   end
 
   def defensive_move(player1, board)
-    board.risked_square(player1, @@used_markers)
+    board.risked_square(player1, @@used_markers, true)
   end
 
   def choose_center_square(player1, board)
