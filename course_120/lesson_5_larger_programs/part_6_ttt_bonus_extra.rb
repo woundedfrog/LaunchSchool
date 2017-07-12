@@ -284,8 +284,7 @@ class Board
     size.times do |i|
       line.each_cons(win_score) do |bingo|
         square_values = @squares.values_at(*bingo).map(&:marker)
-        if square_values.count(pl_marker) >= (win_score - i) &&
-           confirm_grouping(pl_marker, square_values)
+        if confirm_mark_count_and_grouping(pl_marker, square_values, i)
           square = valid_bingo_marker(bingo)
         end
         return square if !!square
@@ -294,8 +293,9 @@ class Board
     nil
   end
 
-  def confirm_grouping(pl_marker, square_values)
-    return true if square_values.uniq.size == 2 &&
+  def confirm_mark_count_and_grouping(pl_marker, square_values, i)
+    return true if square_values.count(pl_marker) >= (win_score - i) &&
+                   square_values.uniq.size == 2 &&
                    square_values.uniq.include?(" ") &&
                    square_values.uniq.include?(pl_marker)
     nil
