@@ -151,7 +151,8 @@ class Board
   end
 
   def risked_square(pl_marker, used_markers, defence)
-    risk_line(pl_marker, used_markers, defence)
+    alternate_mark = used_markers - [pl_marker]
+    risk_line(pl_marker, alternate_mark, defence)
   end
 
   def full?
@@ -260,8 +261,7 @@ class Board
     rows.first.zip(*rows[1..-1])
   end
 
-  def risk_line(pl_marker, used_markers, defence)
-    alternate_mark = used_markers - [pl_marker]
+  def risk_line(pl_marker, alternate_mark, defence)
     counter = defence == true ? 3 : 2
     counter.times do |num|
       @winning_lines.each do |line|
