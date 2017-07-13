@@ -1,5 +1,3 @@
-require 'pry'
-
 class String
   def yellow;         "\033[33m#{self}\033[0m" end
   def cyan;           "\033[36m#{self}\033[0m" end
@@ -133,15 +131,6 @@ class Board
     @squares.keys.select { |key| @squares[key].unmarked? }
   end
 
-  def winning_lines
-    size = board_size
-    sq_nums = (1..size**2).to_a
-    rows = calculate_win_rows(sq_nums, size)
-    cols = calculate_win_cols(rows)
-    diagonals = calculate_win_diagonals(rows, size)
-    rows + cols + diagonals
-  end
-
   def win_score
     case board_size
     when 3 then 3
@@ -246,6 +235,15 @@ class Board
     end
   end
 
+  def winning_lines
+    size = board_size
+    sq_nums = (1..size**2).to_a
+    rows = calculate_win_rows(sq_nums, size)
+    cols = calculate_win_cols(rows)
+    diagonals = calculate_win_diagonals(rows, size)
+    rows + cols + diagonals
+  end
+
   # rubocop:enable Metrics/AbcSize
   def calculate_win_rows(arr, size)
     arr.each_slice(size).to_a
@@ -267,8 +265,6 @@ class Board
       @winning_lines.each do |line|
         all_markers = @squares.values_at(*line).map(&:marker)
         next if (all_markers - alternate_mark).count < win_score
-        # print [all_markers.count(pl_marker), (win_score - 1- num)]
-        # sleep 0.05
         if all_markers.count(pl_marker) >= (win_score - 1 - num)
           risked_square = scan_line_for_bingo(pl_marker, line)
         end
@@ -285,7 +281,7 @@ class Board
       line.each_cons(win_score) do |bingo|
         square_values = @squares.values_at(*bingo).map(&:marker)
         if confirm_mark_count_and_grouping(pl_marker, square_values, i)
-          square = valid_bingo_marker(bingo)
+          square = valid_bingo_square(bingo)
         end
         return square if !!square
       end
@@ -301,7 +297,7 @@ class Board
     nil
   end
 
-  def valid_bingo_marker(bingo)
+  def valid_bingo_square(bingo)
     bingo.size.times do |i|
       bingo.each_cons(bingo.size - i) do |x|
         if @squares.values_at(*x).map(&:marker).count(" ") == 1
@@ -370,7 +366,7 @@ end
 class Player
   include Displayable
 
-  attr_reader :marker, :name, :score, :used_markers
+  attr_reader :marker, :name, :score
   attr_writer :score
 
   @@used_markers = []
@@ -498,7 +494,7 @@ end
 class TTTGame
   include Displayable
 
-  WIN_LIMIT = 6
+  WIN_LIMIT = 3
 
   attr_reader :board, :player1, :player2, :win_score
 
@@ -506,7 +502,7 @@ class TTTGame
     display_welcome_message
     @board = Board.new
     @win_score = board.win_score
-    @players = player_num_and_type
+    @players = player_count_and_type
     @current_player = @players
   end
 
@@ -530,7 +526,7 @@ class TTTGame
 
   private
 
-  def player_num_and_type
+  def player_count_and_type
     answer = nil
     puts "Please choose the number of players and types: (1 - 4)".yellow
     loop do
@@ -557,8 +553,7 @@ class TTTGame
   def current_player_moves
     puts  "#{@current_player[0].name}'s move".center(80)
     turns = @current_player
-    current_player = @current_player[0]
-    current_player.move(@current_player, board)
+    @current_player[0].move(@current_player, board)
 
     @current_player = turns[1..-1] + [turns[0]]
     clear_screen_and_display_board
