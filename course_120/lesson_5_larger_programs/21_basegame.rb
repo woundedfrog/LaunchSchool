@@ -16,8 +16,6 @@ module Displayable
     message.each do |line|
       size = 40 - (line.size / 2)
       size = 0 if size < 0
-      #binding.pry
-      
       puts " " * size + line
     end
   end
@@ -42,13 +40,11 @@ module Displayable
 
   def display_players_banner
     clear_screen
-    #participants = ['Player:'.cyan, ':Dealer'.red]
-    #player_names = [player.name, dealer.name]
     bannerize("#{'Player:'.yellow} #{player.name} #{'vs'.yellow} #{dealer.name} #{':Dealer'.yellow}")
   end
 
-  def display_hands_and_totals
-    
+  def display_new_game
+    bannerize("Let's start a new game!")
   end
 
   def display_total
@@ -63,7 +59,8 @@ end
 class Participant
   include Displayable
 
-  attr_reader :cards, :name
+  attr_accessor :cards
+  attr_reader :name
 
   def initialize
     @cards = []
@@ -96,8 +93,18 @@ class Participant
         total += card.to_i
       end
     end
+    if total > 21
+      count = cards.map(&:face).count("Ace")
+      loop do
+        if total > 21 && count != 0
+          total -= 10
+          count -= 1
+        else
+          break
+        end
+      end
+    end
     total
-    #if total > 21 && cards include "ACE" total -= 10
   end
 
   def show_hand
@@ -205,7 +212,7 @@ end
 
 module GameMechanic
   def player_turn
-    puts "#{player.name}'s turn..."
+    puts "It's your turn..."
     loop do
       puts "Would you like to hit or stay? (h/s)"
       answer = nil
@@ -223,22 +230,39 @@ module GameMechanic
         player.add_card(deck.deal)
         display_players_banner
         puts "#{player.name} hits!"
-        player.show_hand
+        show_turn_hands
         break if player.busted?
       end
     end
   end
 
   def dealer_turn
-    
+    puts "#{dealer.name}'s turn..."
+    loop do
+      if dealer.total >= 17 && !dealer.busted?
+        puts "#{dealer.name} stays!"
+        break
+      elsif dealer.busted?
+        break
+      else
+        puts "#{dealer.name} hits!"
+        dealer.add_card(deck.deal)
+        show_turn_hands
+      end
+    end
   end
 
-  def show_cards
-    puts "#{name}'s hand:"
-    cards.each do |card|
-      puts "=> #{card}"
+  def show_turn_hands(final = false)
+    if final
+      display_players_banner
+      player.show_hand
+      dealer.show_hand
+    else
+      display_players_banner
+      player.show_initial_cards
+      dealer.show_initial_cards
     end
-    puts "=> Total: #{total}\n"
+    bannerize(" ")
   end
 
   def deal_cards
@@ -246,11 +270,6 @@ module GameMechanic
       player.add_card(deck.deal)
       dealer.add_card(deck.deal)
     end
-  end
-
-  def show_cards
-    player.show_initial_cards
-    dealer.show_initial_cards
   end
 
   def show_busted
@@ -261,13 +280,35 @@ module GameMechanic
     end
   end
 
-  def new_game
-    
-    
+  def new_game?
+    puts "Do you wish to play again? (y/n)"
+    loop do
+      answer = gets.chomp.downcase
+      if ['y', 'n'].include?(answer)
+        return true if answer == 'y'
+        return false
+      end
+      puts "Sorry that's not a valid option!"
+    end
+  end
+
+  def show_result
+    show_turn_hands(final = true)
+    if player.total > dealer.total
+      puts "It looks like #{player.name} wins!"
+    elsif player.total < dealer.total
+      puts "It looks like #{dealer.name} wins!"
+    else
+      puts "It's a tie!"
+    end
   end
 
   def reset_game
     self.deck = Deck.new
+    player.cards = []
+    dealer.cards = []
+    display_new_game
+    continue?("Press Enter to continue!")
   end
 end
 
@@ -288,20 +329,20 @@ class TwentyOne
     loop do
       display_players_banner
       deal_cards
-      show_cards
+      show_turn_hands(final = false)
       player_turn
       if player.busted?
         show_busted
         break
       end
       dealer_turn
-      if player.busted?
+      if dealer.busted?
         show_busted
         break
       end
-      puts 'passed test and breaking...'
-      break
       show_result
+      break unless new_game?
+      reset_game
     end
     display_goodbye_message
   end
