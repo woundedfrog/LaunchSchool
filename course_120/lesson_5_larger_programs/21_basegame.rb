@@ -1,52 +1,8 @@
+require 'pry'
 class String
   def yellow;         "\033[33m#{self}\033[0m" end
   def cyan;           "\033[36m#{self}\033[0m" end
   def red;            "\e[41m#{self}\e[0m" end
-end
-
-class Player < Participant
-  def set_name
-    loop do
-      colorize_yellow("Please enter your name.")
-      answer = gets.chomp.capitalize
-      return answer if !answer.nil?
-      colorize_yellow("I'm sorry, that's not a valid name!")
-    end
-  end
-end
-
-class Dealer < Participant
-  DEALER_NAMES = ["Louise", "Hergé", "Maurice"]
-  
-  def deal
-    # does the dealer or the deck deal?
-  end
-
-  def set_name
-    DEALER_NAMES.sample
-  end
-end
-
-class Participant
-  include Displayable
-
-  def initialize
-    @cards = []
-    @name = set_name
-  end
-
-  def hit
-  end
-
-  def stay
-  end
-
-  def busted?
-  end
-
-  def total
-    # definitely looks like we need to know about "cards" to produce some total
-  end
 end
 
 module Displayable
@@ -74,11 +30,11 @@ module Displayable
   end
 
   def welcome_message
-    colorize_yellow("Good evening Sir! Welcome to BlackJack")
+    bannerize("Good evening Sir! Welcome to BlackJack")
   end
 
   def goodbye_message
-    colorize_yellow("Thank you for playing, Sir!")
+    bannerize("Thank you for playing, Sir!")
   end
 
   def display_hands_and_totals
@@ -87,6 +43,126 @@ module Displayable
 
   def display_total
     
+  end
+end
+
+class Participant
+  include Displayable
+
+  attr_reader :cards, :name
+
+  def initialize
+    @cards = []
+    @name = set_name
+  end
+
+  def add_card(new_card)
+    self.cards << new_card
+  end
+
+  def hit
+  end
+
+  def stay
+  end
+
+  def busted?
+  end
+
+  def total
+    total = 0
+    cards.each do |card|
+      card = card.face
+      if card == "Ace"
+        total += 11
+      elsif ["Jack", "Queen", "King"].include?(card)
+        total += 10
+      else
+        total += card.to_i
+      end
+    end
+    total
+    #if total > 21 && cards include "ACE" total -= 10
+  end
+
+  def show_hand
+    puts "---- #{name}'s Hand ----"
+    cards.each do |card|
+      puts "=> #{card}"
+    end
+    puts "=> Total: #{total}"
+    puts ""  
+  end
+end
+
+class Player < Participant
+  def set_name
+    puts "Please enter your name.".yellow
+    loop do
+      answer = gets.chomp.capitalize
+      return answer if answer != ''
+      puts "I'm sorry, that's not a valid name!".yellow
+    end
+  end
+
+  def show_initial_cards
+    show_hand
+  end
+end
+
+class Dealer < Participant
+  DEALER_NAMES = ["Louise", "Hergé", "Maurice"]
+  
+  def deal
+    # does the dealer or the deck deal?
+  end
+
+  def set_name
+    DEALER_NAMES.sample
+  end
+
+  def show_initial_cards
+    puts "---- #{name}'s Hand ----"
+    cards.take(cards.size - 1).each do |cards|
+      puts "=> #{cards}"
+    end
+    puts "=> ?? "
+    puts "=> Total: ??"
+    puts ""
+  end
+end
+
+class Card
+  SUITS = ['♥', '♦', '♠', '♣']
+  FACES = ['2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K', 'A']
+
+  def initialize(suit, face)
+    @suit = suit
+    @face = face
+  end
+
+  def suit
+    case @suit
+    when '♥' then '♥'
+    when '♦' then '♦'
+    when '♠' then '♠'
+    when '♣' then '♣'
+    end
+    end
+
+  def face
+    case @face
+    when "J" then "Jack"
+    when "Q" then "Queen"
+    when "K" then "King"
+    when "A" then "Ace"
+    else
+      @face
+    end
+    end
+
+  def to_s
+    "The #{suit}#{face}"
   end
 end
 
@@ -104,15 +180,43 @@ class Deck
   end
 
   def deal
-    # does the dealer or the deck deal?
+    cards.pop
   end
 
-  def suffle!
+  def shuffle!
     @cards.shuffle!
   end
 end
 
-module Game
+module GameMechanic
+  def player_turn
+    
+  end
+
+  def dealer_turn
+    
+  end
+
+  def show_cards
+    puts "#{name}'s hand:"
+    cards.each do |card|
+      puts "=> #{card}"
+    end
+    puts "=> Total: #{total}\n"
+  end
+
+  def deal_cards
+    2.times do
+      player.add_card(deck.deal)
+      dealer.add_card(deck.deal)
+    end
+  end
+
+  def show_cards
+    player.show_initial_cards
+    dealer.show_initial_cards
+  end
+
   def new_game?
 
   end
@@ -123,7 +227,7 @@ module Game
 end
 
 class TwentyOne
-  include Game
+  include GameMechanic
 
   attr_accessor :deck, :player, :dealer
 
@@ -136,40 +240,13 @@ class TwentyOne
   def start
     loop do
       deal_cards
-      show_initial_cards
+      show_cards
       player_turn
+      break
       dealer_turn
       show_result
     end
   end
-end
-
-class Card
-  SUITS = ['♥', '♦', '♠', '♣']
-  VALUES = ['2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K', 'A']
-
-  def initialize(suit, face)
-    @suit = suit
-    @face = face
-  end
-
-  def face
-    case @face
-    when '♥' then '♥'
-    when '♦' then '♦'
-    when '♠' then '♠'
-    when '♣' then '♣'
-    end
-    end
-
-  def suit
-    case @suit
-    when "J" then "Jack"
-    when "Q" then "Queen"
-    when "K" then "King"
-    when "A" then "Ace"
-    end
-    end
 end
 
 game = TwentyOne.new
