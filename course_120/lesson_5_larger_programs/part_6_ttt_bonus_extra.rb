@@ -1,22 +1,17 @@
-class String
-  def yellow;         "\033[33m#{self}\033[0m" end
-  def cyan;           "\033[36m#{self}\033[0m" end
-  def red;            "\e[41m#{self}\e[0m" end
-end
-
 ########################################
 #          DISPLAY MESSAGES
 ########################################
 
 module Displayable
   def bannerize(*message)
-    puts(("=" * 80).cyan)
+    puts(cyan("=" * 80))
     center_message(*message)
-    puts(("=" * 80).cyan)
+    puts(cyan("=" * 80))
   end
 
   def center_message(*message)
     message.each do |line|
+      line = line.gsub(/\e\[\d+\m/, "")
       size = 40 - (line.size / 2)
       size = 0 if size < 0
       puts " " * size + line
@@ -24,11 +19,23 @@ module Displayable
   end
 
   def colorize_yellow(string)
-    puts string.center(80).yellow
+    puts yellow(string.center(80))
+  end
+
+  def yellow(string)
+    "\033[33m#{string}\033[0m"
+  end
+
+  def cyan(string)
+    "\033[36m#{string}\033[0m"
+  end
+
+  def red(string)
+    "\e[41m#{string}\e[0m"
   end
 
   def continue?(string)
-    puts string.center(80).red
+    puts red(string.center(80))
     gets
   end
 
@@ -170,7 +177,7 @@ class Board
 
   def choose_board_size
     answer = nil
-    puts "Choose a board size: (1, 2, or 3)".yellow
+    puts yellow("Choose a board size: (1, 2, or 3)")
     puts "(1): 3x3 - matches needed => 3"
     puts "(2): 5x5 - matches needed => 4"
     puts "(3): 9x9 - matches needed => 5"
@@ -179,8 +186,8 @@ class Board
       break if [1, 2, 3].include?(answer)
       puts "That's not a valid option!"
     end
-    grids = [[nil], [9, 3], [25, 5], [81, 9]]
-    grids[answer]
+    grids = [[9, 3], [25, 5], [81, 9]]
+    grids[answer - 1]
   end
 
   def draw_squares(lines, sqr_num)
@@ -208,7 +215,7 @@ class Board
     else
       draw_num_and_verticles(lines, sqr_num, row)
     end
-    puts row.join("|").center(80).cyan
+    puts cyan(row.join("|").center(80))
   end
 
   def draw_border_line(lines)
@@ -309,11 +316,11 @@ class Board
   end
 
   def bingo_line?(squares)
-    mark = squares.map(&:marker)
+    marks = squares.map(&:marker)
     result = nil
-    mark.uniq.each do |pl|
+    marks.uniq.each do |pl|
       next if pl == " "
-      mark.each_cons(win_score) do |row|
+      marks.each_cons(win_score) do |row|
         if marker_is_uniq?(row, pl)
           result = pl
         end
@@ -397,7 +404,7 @@ class Human < Player
 
   def select_name
     loop do
-      puts "Enter your name!".yellow
+      puts yellow("Enter your name!")
       answer = gets.chomp.capitalize
       return answer unless answer == ''
       puts "Enter a valid name!"
@@ -407,7 +414,7 @@ class Human < Player
   def choose_marker
     choice = ''
     loop do
-      puts "Choose a player marker.".yellow
+      puts yellow("Choose a player marker.")
       choice = gets.chomp.upcase
       if choice != '' && choice.size == 1 && !@@used_markers.include?(choice)
         @@used_markers << choice
@@ -478,7 +485,7 @@ class Computer < Player
   end
 
   def choose_center_square(player1, board)
-    size = board.instance_variable_get(:@board_size)
+    size = board.board_size
     case size
     when 3 then board[5] = player1 if board[5].marker == " "
     when 5 then board[13] = player1 if board[13].marker == " "
@@ -528,7 +535,7 @@ class TTTGame
 
   def player_count_and_type
     answer = nil
-    puts "Please choose the number of players and types: (1 - 4)".yellow
+    puts yellow("Please choose the number of players and types: (1 - 4)")
     loop do
       puts "(1): 2 Players: human & computer"
       puts "(2): 2 Players: human & human"
