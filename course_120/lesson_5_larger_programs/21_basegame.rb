@@ -1,31 +1,39 @@
 require 'pry'
-class String
-  def yellow;         "\033[33m#{self}\033[0m" end
-  def cyan;           "\033[36m#{self}\033[0m" end
-  def red;            "\e[41m#{self}\e[0m" end
-end
 
 module Displayable
   def bannerize(*message)
-    puts(("=" * 80).cyan)
+    puts(cyan("=" * 80))
     center_message(*message)
-    puts(("=" * 80).cyan)
+    puts(cyan("=" * 80))
   end
 
   def center_message(*message)
     message.each do |line|
-      size = 40 - (line.size / 2)
+      line_size = line.gsub(/\e\[\d+\m/, "").size
+      size = 40 - (line_size / 2)
       size = 0 if size < 0
       puts " " * size + line
     end
   end
 
   def colorize_yellow(string)
-    puts string.center(80).yellow
+    puts yellow(string.center(80))
+  end
+
+  def yellow(string)
+    "\033[33m#{string}\033[0m"
+  end
+
+  def cyan(string)
+    "\033[36m#{string}\033[0m"
+  end
+
+  def red(string)
+    "\e[41m#{string}\e[0m"
   end
 
   def continue?(string)
-    puts string.center(80).red
+    puts red(string.center(80))
     gets
   end
 
@@ -40,15 +48,11 @@ module Displayable
 
   def display_players_banner
     clear_screen
-    bannerize("#{'Player:'.yellow} #{player.name} #{'vs'.yellow} #{dealer.name} #{':Dealer'.yellow}")
+    bannerize("#{yellow('Player:')} #{player.name} #{yellow('vs')} #{dealer.name} #{yellow(':Dealer')}")
   end
 
   def display_new_game
     bannerize("Let's start a new game!")
-  end
-
-  def display_total
-    
   end
 
   def clear_screen
@@ -68,13 +72,7 @@ class Participant
   end
 
   def add_card(new_card)
-    self.cards << new_card
-  end
-
-  def hit
-  end
-
-  def stay
+    cards << new_card
   end
 
   def busted?
@@ -85,23 +83,20 @@ class Participant
     total = 0
     cards.each do |card|
       card = card.face
-      if card == "Ace"
-        total += 11
-      elsif ["Jack", "Queen", "King"].include?(card)
-        total += 10
-      else
-        total += card.to_i
-      end
+      total += if card == "Ace"
+                 11
+               elsif ["Jack", "Queen", "King"].include?(card)
+                 10
+               else
+                 card.to_i
+               end
     end
     if total > 21
       count = cards.map(&:face).count("Ace")
       loop do
-        if total > 21 && count != 0
-          total -= 10
-          count -= 1
-        else
-          break
-        end
+        break if total <= 21 || count == 0
+        total -= 10
+        count -= 1
       end
     end
     total
@@ -113,17 +108,17 @@ class Participant
       puts "=> #{card}"
     end
     puts "=> Total: #{total}"
-    puts ""  
+    puts ""
   end
 end
 
 class Player < Participant
   def set_name
-    puts "Please enter your name.".yellow
+    puts yellow("Please enter your name.")
     loop do
       answer = gets.chomp.capitalize
       return answer if answer != ''
-      puts "I'm sorry, that's not a valid name!".yellow
+      puts yellow("I'm sorry, that's not a valid name!")
     end
   end
 
@@ -134,10 +129,6 @@ end
 
 class Dealer < Participant
   DEALER_NAMES = ["Louise", "Hergé", "Maurice"]
-  
-  def deal
-    # does the dealer or the deck deal?
-  end
 
   def set_name
     DEALER_NAMES.sample
@@ -170,7 +161,7 @@ class Card
     when '♠' then '♠'
     when '♣' then '♣'
     end
-    end
+  end
 
   def face
     case @face
@@ -181,7 +172,7 @@ class Card
     else
       @face
     end
-    end
+  end
 
   def to_s
     "The #{suit}#{face}"
@@ -195,7 +186,7 @@ class Deck
     @cards = []
     Card::SUITS.each do |suit|
       Card::FACES.each do |face|
-        @cards << Card.new(suit, face) 
+        @cards << Card.new(suit, face)
       end
     end
     shuffle!
@@ -253,12 +244,11 @@ module GameMechanic
   end
 
   def show_turn_hands(final = false)
+    display_players_banner
     if final
-      display_players_banner
       player.show_hand
       dealer.show_hand
     else
-      display_players_banner
       player.show_initial_cards
       dealer.show_initial_cards
     end
@@ -293,10 +283,12 @@ module GameMechanic
   end
 
   def show_result
-    show_turn_hands(final = true)
-    if player.total > dealer.total
+    player_total = player.total
+    dealer_total = dealer.total
+    show_turn_hands(true)
+    if player_total > dealer_total
       puts "It looks like #{player.name} wins!"
-    elsif player.total < dealer.total
+    elsif player_total < dealer_total
       puts "It looks like #{dealer.name} wins!"
     else
       puts "It's a tie!"
@@ -329,7 +321,7 @@ class TwentyOne
     loop do
       display_players_banner
       deal_cards
-      show_turn_hands(final = false)
+      show_turn_hands(false)
       player_turn
       if player.busted?
         show_busted
