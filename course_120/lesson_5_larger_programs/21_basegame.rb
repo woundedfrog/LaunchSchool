@@ -221,10 +221,6 @@ class Card
       @face
     end
   end
-
-  def to_s
-    "The #{suit}#{face}"
-  end
 end
 
 ########################################
@@ -258,6 +254,8 @@ end
 ########################################
 
 module GameMechanic
+  private
+
   def player_turn
     loop do
       puts "It's your turn..."
