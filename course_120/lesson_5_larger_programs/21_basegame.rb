@@ -1,4 +1,7 @@
 require 'pry'
+########################################
+#          DISPLAY MESSAGES
+########################################
 
 module Displayable
   def bannerize(*message)
@@ -60,6 +63,10 @@ module Displayable
   end
 end
 
+########################################
+#          Participant Class
+########################################
+
 class Participant
   include Displayable
 
@@ -103,14 +110,37 @@ class Participant
   end
 
   def show_hand
-    puts "---- #{name}'s Hand ----"
-    cards.each do |card|
-      puts "=> #{card}"
-    end
+    puts yellow("---- #{name}'s Hand ----")
+    format_cards_display
     puts "=> Total: #{total}"
     puts ""
   end
+
+  def format_cards_display
+    top = []
+    mid1 = []
+    mid2 = []
+    mid3 = []
+    bott = []
+    cards.each do |card|
+      c_face = card.face[0] if card.face.class == String
+      top << " ___ "
+      mid1 << "|  #{c_face}|"
+      mid2 << "| #{card.suit} |"
+      mid3 << "|#{c_face}  |"
+      bott << " ‾‾‾ "
+    end
+    print_formated_cards(top, mid1, mid2, mid3, bott)
+  end
+
+  def print_formated_cards(*card_parts)
+    card_parts.each { |parts| puts parts.join(" ") }
+  end
 end
+
+########################################
+#          Player Class
+########################################
 
 class Player < Participant
   def set_name
@@ -127,6 +157,10 @@ class Player < Participant
   end
 end
 
+########################################
+#          Dealer Class
+########################################
+
 class Dealer < Participant
   DEALER_NAMES = ["Louise", "Hergé", "Maurice"]
 
@@ -135,15 +169,24 @@ class Dealer < Participant
   end
 
   def show_initial_cards
-    puts "---- #{name}'s Hand ----"
-    cards.take(cards.size - 1).each do |cards|
-      puts "=> #{cards}"
+    puts yellow("---- #{name}'s Hand ----")
+    cards.take(cards.size - 1).each do |card|
+      c_face = card.face[0] if card.face.class == String
+      puts [[" ___ "],
+            ["|  #{c_face}|"],
+            ["| #{card.suit} |   ??"],
+            ["|#{c_face}  |"],
+            [" ‾‾‾ "]]
     end
-    puts "=> ?? "
+    #puts "=> ?? "
     puts "=> Total: ??"
     puts ""
   end
 end
+
+########################################
+#          Card Class
+########################################
 
 class Card
   SUITS = ['♥', '♦', '♠', '♣']
@@ -179,6 +222,10 @@ class Card
   end
 end
 
+########################################
+#          Deck Class
+########################################
+
 class Deck
   attr_reader :cards
 
@@ -201,11 +248,15 @@ class Deck
   end
 end
 
+########################################
+#          GameMechanic module
+########################################
+
 module GameMechanic
   def player_turn
     puts "It's your turn..."
     loop do
-      puts "Would you like to hit or stay? (h/s)"
+      puts red("Would you like to hit or stay? (h/s)")
       answer = nil
       loop do
         answer = gets.chomp.downcase
@@ -230,15 +281,17 @@ module GameMechanic
   def dealer_turn
     puts "#{dealer.name}'s turn..."
     loop do
-      if dealer.total >= 17 && !dealer.busted?
-        puts "#{dealer.name} stays!"
+      if dealer.total >= 17 && !dealer.busted? && dealer.total >= player.total
+        puts yellow("#{dealer.name} stays!")
+        sleep 1.5
         break
       elsif dealer.busted?
         break
       else
-        puts "#{dealer.name} hits!"
+        puts yellow("#{dealer.name} hits!")
+        sleep 1.5
         dealer.add_card(deck.deal)
-        show_turn_hands
+        show_turn_hands(true)
       end
     end
   end
@@ -252,7 +305,7 @@ module GameMechanic
       player.show_initial_cards
       dealer.show_initial_cards
     end
-    bannerize(" ")
+    puts(cyan("=" * 80))
   end
 
   def deal_cards
@@ -264,14 +317,14 @@ module GameMechanic
 
   def show_busted
     if player.busted?
-      puts "Player: #{player.name} busted! The house wins!"
+      puts yellow("Player: #{player.name} busted! The house wins!")
     elsif dealer.busted?
-      puts "House: #{dealer.name} busted! #{player.name} wins!"
+      puts yellow("House: #{dealer.name} busted! #{player.name} wins!")
     end
   end
 
   def new_game?
-    puts "Do you wish to play again? (y/n)"
+    puts bannerize("Do you wish to play again? (y/n)")
     loop do
       answer = gets.chomp.downcase
       if ['y', 'n'].include?(answer)
@@ -290,7 +343,7 @@ module GameMechanic
       puts "It looks like #{player.name} wins!"
     elsif player_total < dealer_total
       puts "It looks like #{dealer.name} wins!"
-    else
+    elsif player_total == dealer_total
       puts "It's a tie!"
     end
   end
@@ -302,13 +355,27 @@ module GameMechanic
     display_new_game
     continue?("Press Enter to continue!")
   end
+
+  def detect_busted(player)
+    if player.busted?
+      show_busted
+      return true
+    end
+    false
+  end
 end
+
+########################################
+#          TwentyOne Class
+########################################
 
 class TwentyOne
   include GameMechanic
   include Displayable
 
   attr_accessor :deck, :player, :dealer
+
+  ROUND_LIMIT = 3
 
   def initialize
     display_welcome_message
@@ -318,22 +385,24 @@ class TwentyOne
   end
 
   def start
+    round = 0
     loop do
-      display_players_banner
-      deal_cards
-      show_turn_hands(false)
-      player_turn
-      if player.busted?
-        show_busted
+      loop do
+        round += 1
+        display_players_banner
+        deal_cards
+        show_turn_hands(false)
+        player_turn
+        break if detect_busted(player)
+        show_turn_hands(true)
+        dealer_turn
+        break if detect_busted(dealer)
+        show_result
         break
       end
-      dealer_turn
-      if dealer.busted?
-        show_busted
-        break
+      if round == ROUND_LIMIT
+        break unless new_game?
       end
-      show_result
-      break unless new_game?
       reset_game
     end
     display_goodbye_message
