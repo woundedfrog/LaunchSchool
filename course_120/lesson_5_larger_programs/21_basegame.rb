@@ -51,7 +51,8 @@ module Displayable
 
   def display_players_banner
     clear_screen
-    bannerize("#{yellow('Player:')} #{player.name} #{yellow('vs')} #{dealer.name} #{yellow(':Dealer')}")
+    bannerize("#{yellow('Player:')} #{player.name}" \
+               " #{yellow('vs')} #{dealer.name} #{yellow(':Dealer')}")
   end
 
   def display_new_game
@@ -98,36 +99,42 @@ class Participant
                  card.to_i
                end
     end
-    if total > 21
-      count = cards.map(&:face).count("Ace")
-      loop do
-        break if total <= 21 || count == 0
-        total -= 10
-        count -= 1
-      end
+    total = adjust_total(total, cards) if total > 21
+    total
+  end
+
+  def adjust_total(total, cards)
+    count = cards.map(&:face).count("Ace")
+    loop do
+      break if total <= 21 || count == 0
+      total -= 10
+      count -= 1
     end
     total
   end
 
   def show_hand
     puts yellow("---- #{name}'s Hand ----")
-    format_cards_display
+    format_cards_display(@cards)
     puts "=> Total: #{total}"
     puts ""
   end
 
-  def format_cards_display
+  private
+
+  def format_cards_display(cards)
     top = []
     mid1 = []
     mid2 = []
     mid3 = []
     bott = []
     cards.each do |card|
-      c_face = card.face[0] if card.face.class == String
+      face = card.face
+      face = card.face[0] if ["Ace", "Jack", "Queen", "King"].include?(face)
       top << " ___ "
-      mid1 << "|  #{c_face}|"
+      mid1 << "|" + (" " * (3 - face.size)) + "#{face}|"
       mid2 << "| #{card.suit} |"
-      mid3 << "|#{c_face}  |"
+      mid3 << "|#{face}" + (" " * (3 - face.size)) + "|"
       bott << " ‾‾‾ "
     end
     print_formated_cards(top, mid1, mid2, mid3, bott)
@@ -178,9 +185,7 @@ class Dealer < Participant
             ["|#{c_face}  |"],
             [" ‾‾‾ "]]
     end
-    #puts "=> ?? "
-    puts "=> Total: ??"
-    puts ""
+    puts "=> Total: ??\n"
   end
 end
 
@@ -254,46 +259,46 @@ end
 
 module GameMechanic
   def player_turn
-    puts "It's your turn..."
     loop do
-      puts red("Would you like to hit or stay? (h/s)")
+      puts "It's your turn..."
+      puts red("\nWould you like to hit or stay? (h/s)")
       answer = nil
       loop do
         answer = gets.chomp.downcase
         break if ['h', 's'].include?(answer)
         puts "Sorry that's not a valid option!"
       end
-      if answer == 's'
-        puts "#{player.name} stays!"
-        break
-      elsif player.busted?
-        break
-      else
-        player.add_card(deck.deal)
-        display_players_banner
-        puts "#{player.name} hits!"
-        show_turn_hands
-        break if player.busted?
-      end
+      break if answer == 's'
+      @player.add_card(deck.deal)
+      show_turn_hands
+      break if @player.busted?
     end
   end
 
   def dealer_turn
-    puts "#{dealer.name}'s turn..."
     loop do
-      if dealer.total >= 17 && !dealer.busted? && dealer.total >= player.total
-        puts yellow("#{dealer.name} stays!")
-        sleep 1.5
-        break
-      elsif dealer.busted?
-        break
+      show_turn_hands(true)
+      puts "#{dealer.name}'s turn..."
+      break if @dealer.busted?
+      if @dealer.total >= 17 && !@dealer.busted? &&
+         @dealer.total >= @player.total
+        break if dealer_stays
       else
-        puts yellow("#{dealer.name} hits!")
-        sleep 1.5
-        dealer.add_card(deck.deal)
-        show_turn_hands(true)
+        dealer_hits
       end
     end
+  end
+
+  def dealer_stays
+    puts yellow("#{dealer.name} stays!")
+    sleep 1.5
+    true
+  end
+
+  def dealer_hits
+    puts yellow("#{dealer.name} hits!")
+    sleep 1.5
+    dealer.add_card(deck.deal)
   end
 
   def show_turn_hands(final = false)
@@ -320,18 +325,6 @@ module GameMechanic
       puts yellow("Player: #{player.name} busted! The house wins!")
     elsif dealer.busted?
       puts yellow("House: #{dealer.name} busted! #{player.name} wins!")
-    end
-  end
-
-  def new_game?
-    puts bannerize("Do you wish to play again? (y/n)")
-    loop do
-      answer = gets.chomp.downcase
-      if ['y', 'n'].include?(answer)
-        return true if answer == 'y'
-        return false
-      end
-      puts "Sorry that's not a valid option!"
     end
   end
 
@@ -387,25 +380,43 @@ class TwentyOne
   def start
     round = 0
     loop do
-      loop do
-        round += 1
-        display_players_banner
-        deal_cards
-        show_turn_hands(false)
-        player_turn
-        break if detect_busted(player)
-        show_turn_hands(true)
-        dealer_turn
-        break if detect_busted(dealer)
-        show_result
-        break
-      end
+      round += 1
+      game_main_loop
       if round == ROUND_LIMIT
         break unless new_game?
+        round = 0
       end
       reset_game
     end
     display_goodbye_message
+  end
+
+  private
+
+  def game_main_loop
+    loop do
+      display_players_banner
+      deal_cards
+      show_turn_hands(false)
+      player_turn
+      break if detect_busted(player)
+      dealer_turn
+      break if detect_busted(dealer)
+      show_result
+      break
+    end
+  end
+
+  def new_game?
+    puts bannerize("Do you wish to play again? (y/n)")
+    loop do
+      answer = gets.chomp.downcase
+      if ['y', 'n'].include?(answer)
+        return true if answer == 'y'
+        return false
+      end
+      puts "Sorry that's not a valid option!"
+    end
   end
 end
 
