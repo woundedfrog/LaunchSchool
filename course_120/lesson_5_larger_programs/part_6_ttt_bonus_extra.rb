@@ -96,11 +96,89 @@ module Displayable
   end
 end
 
+module SquareSearcher
+  private
+
+    def risk_line(pl_marker, alternate_mark, defence)
+    counter = defence == true ? 3 : 2
+    counter.times do |num|
+      @winning_lines.each do |line|
+        all_markers = @squares.values_at(*line).map(&:marker)
+        next if (all_markers - alternate_mark).count < win_score
+        if all_markers.count(pl_marker) >= (win_score - 1 - num)
+          risked_square = scan_line_for_bingo(pl_marker, line)
+        end
+        return risked_square if !risked_square.nil?
+      end
+    end
+    nil
+  end
+
+  def scan_line_for_bingo(pl_marker, line)
+    size = win_score - 1
+    size = win_score if win_score == 5
+    size.times do |i|
+      line.each_cons(win_score) do |bingo|
+        square_values = @squares.values_at(*bingo).map(&:marker)
+        if confirm_mark_count_and_grouping(pl_marker, square_values, i)
+          square = valid_bingo_square(bingo)
+        end
+        return square if !!square
+      end
+    end
+    nil
+  end
+
+  def confirm_mark_count_and_grouping(pl_marker, square_values, i)
+    return true if square_values.count(pl_marker) >= (win_score - i) &&
+                   square_values.uniq.size == 2 &&
+                   square_values.uniq.include?(" ") &&
+                   square_values.uniq.include?(pl_marker)
+    nil
+  end
+
+  def valid_bingo_square(bingo)
+    bingo.size.times do |i|
+      bingo.each_cons(bingo.size - i) do |x|
+        if @squares.values_at(*x).map(&:marker).count(" ") == 1
+          return x.find { |key| @squares[key].marker == " " }
+        end
+      end
+    end
+    nil
+  end
+
+  def bingo_line?(squares)
+    marks = squares.map(&:marker)
+    result = nil
+    marks.uniq.each do |pl|
+      next if pl == " "
+      marks.each_cons(win_score) do |row|
+        if marker_is_uniq?(row, pl)
+          result = pl
+        end
+        return result if result
+      end
+    end
+    result
+  end
+
+  def marker_is_uniq?(row, pl)
+    row.uniq.size == 1 && !row.uniq.include?(" ") &&
+      row.uniq.include?(pl)
+  end
+
+  def return_marker(squares)
+    bingo_line?(squares)
+  end
+end
+
 ########################################
 #             BOARD Class
 ########################################
 
 class Board
+  include SquareSearcher
   include Displayable
 
   attr_reader :board_size, :win_score
@@ -264,79 +342,6 @@ class Board
 
   def calculate_win_cols(rows)
     rows.first.zip(*rows[1..-1])
-  end
-
-  def risk_line(pl_marker, alternate_mark, defence)
-    counter = defence == true ? 3 : 2
-    counter.times do |num|
-      @winning_lines.each do |line|
-        all_markers = @squares.values_at(*line).map(&:marker)
-        next if (all_markers - alternate_mark).count < win_score
-        if all_markers.count(pl_marker) >= (win_score - 1 - num)
-          risked_square = scan_line_for_bingo(pl_marker, line)
-        end
-        return risked_square if !risked_square.nil?
-      end
-    end
-    nil
-  end
-
-  def scan_line_for_bingo(pl_marker, line)
-    size = win_score - 1
-    size = win_score if win_score == 5
-    size.times do |i|
-      line.each_cons(win_score) do |bingo|
-        square_values = @squares.values_at(*bingo).map(&:marker)
-        if confirm_mark_count_and_grouping(pl_marker, square_values, i)
-          square = valid_bingo_square(bingo)
-        end
-        return square if !!square
-      end
-    end
-    nil
-  end
-
-  def confirm_mark_count_and_grouping(pl_marker, square_values, i)
-    return true if square_values.count(pl_marker) >= (win_score - i) &&
-                   square_values.uniq.size == 2 &&
-                   square_values.uniq.include?(" ") &&
-                   square_values.uniq.include?(pl_marker)
-    nil
-  end
-
-  def valid_bingo_square(bingo)
-    bingo.size.times do |i|
-      bingo.each_cons(bingo.size - i) do |x|
-        if @squares.values_at(*x).map(&:marker).count(" ") == 1
-          return x.find { |key| @squares[key].marker == " " }
-        end
-      end
-    end
-    nil
-  end
-
-  def bingo_line?(squares)
-    marks = squares.map(&:marker)
-    result = nil
-    marks.uniq.each do |pl|
-      next if pl == " "
-      marks.each_cons(win_score) do |row|
-        if marker_is_uniq?(row, pl)
-          result = pl
-        end
-        return result if result
-      end
-    end
-    result
-  end
-
-  def marker_is_uniq?(row, pl)
-    row.uniq.size == 1 && !row.uniq.include?(" ") &&
-      row.uniq.include?(pl)
-  end
-
-  def return_marker(squares)
-    bingo_line?(squares)
   end
 end
 
