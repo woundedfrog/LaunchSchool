@@ -3,6 +3,8 @@
 ########################################
 
 module Displayable
+  private
+
   def bannerize(*message)
     puts(cyan("=" * 80))
     center_message(*message)
@@ -96,10 +98,14 @@ module Displayable
   end
 end
 
+########################################
+#        SquareSearcher MODULE
+########################################
+
 module SquareSearcher
   private
 
-    def risk_line(pl_marker, alternate_mark, defence)
+  def risk_line(pl_marker, alternate_mark, defence)
     counter = defence == true ? 3 : 2
     counter.times do |num|
       @winning_lines.each do |line|
