@@ -24,11 +24,11 @@ module Displayable
   end
 
   def yellow(string)
-    "\033[33m#{string}\033[0m"
+    "\e[33m#{string}\e[0m"
   end
 
   def cyan(string)
-    "\033[36m#{string}\033[0m"
+    "\e[36m#{string}\e[0m"
   end
 
   def red(string)
@@ -307,6 +307,21 @@ end
 ########################################
 
 class GameEngine
+  include GameRound
+  include Displayable
+
+  attr_accessor :deck, :player, :dealer
+
+  ROUND_LIMIT = 3
+
+  def initialize
+    display_welcome_message
+    @deck = Deck.new
+    @player = Player.new
+    @dealer = Dealer.new
+    @current_player = [player, dealer]
+  end
+
   private
 
   def show_turn_hands(final = false)
@@ -384,21 +399,6 @@ end
 ########################################
 
 class TwentyOneGame < GameEngine
-  include GameRound
-  include Displayable
-
-  attr_accessor :deck, :player, :dealer
-
-  ROUND_LIMIT = 3
-
-  def initialize
-    display_welcome_message
-    @deck = Deck.new
-    @player = Player.new
-    @dealer = Dealer.new
-    @current_player = [player, dealer]
-  end
-
   def start
     round = 0
     loop do
