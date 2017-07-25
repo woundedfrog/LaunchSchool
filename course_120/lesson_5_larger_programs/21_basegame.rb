@@ -243,11 +243,19 @@ class Deck
 end
 
 ########################################
-#          GameMechanic module
+#          GameRound module
 ########################################
 
-module GameMechanic
+module GameRound
   private
+
+  def current_player_turn
+    if @current_player[0].instance_of?(Player)
+      player_turn
+    else
+      dealer_turn
+    end
+  end
 
   def player_turn
     loop do
@@ -291,6 +299,14 @@ module GameMechanic
     sleep 1.5
     dealer.add_card(deck.deal)
   end
+end
+
+########################################
+#          GameEngine Class
+########################################
+
+class GameEngine
+  private
 
   def show_turn_hands(final = false)
     display_players_banner
@@ -339,14 +355,35 @@ module GameMechanic
     end
     false
   end
+
+  def reset_game
+    self.deck = Deck.new
+    player.cards = []
+    dealer.cards = []
+    @current_player = [player, dealer]
+    display_new_game
+    continue?("Press Enter to continue!")
+  end
+
+  def new_game?
+    puts bannerize("Do you wish to play again? (y/n)")
+    loop do
+      answer = gets.chomp.downcase
+      if ['y', 'n'].include?(answer)
+        return true if answer == 'y'
+        return false
+      end
+      puts "Sorry that's not a valid option!"
+    end
+  end
 end
 
 ########################################
-#          TwentyOne Class
+#          TwentyOneGame Class
 ########################################
 
-class TwentyOne
-  include GameMechanic
+class TwentyOneGame < GameEngine
+  include GameRound
   include Displayable
 
   attr_accessor :deck, :player, :dealer
@@ -388,36 +425,7 @@ class TwentyOne
     end
     show_result
   end
-
-  def current_player_turn
-    if @current_player[0].instance_of?(Player)
-      player_turn
-    else
-      dealer_turn
-    end
-  end
-
-  def new_game?
-    puts bannerize("Do you wish to play again? (y/n)")
-    loop do
-      answer = gets.chomp.downcase
-      if ['y', 'n'].include?(answer)
-        return true if answer == 'y'
-        return false
-      end
-      puts "Sorry that's not a valid option!"
-    end
-  end
-
-  def reset_game
-    self.deck = Deck.new
-    player.cards = []
-    dealer.cards = []
-    @current_player = [player, dealer]
-    display_new_game
-    continue?("Press Enter to continue!")
-  end
 end
 
-game = TwentyOne.new
+game = TwentyOneGame.new
 game.start
