@@ -194,21 +194,14 @@ end
 ########################################
 
 class Card
+  attr_reader :suit
+
   SUITS = ['♥', '♦', '♠', '♣']
   FACES = ['2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K', 'A']
 
   def initialize(suit, face)
     @suit = suit
     @face = face
-  end
-
-  def suit
-    case @suit
-    when '♥' then '♥'
-    when '♦' then '♦'
-    when '♠' then '♠'
-    when '♣' then '♣'
-    end
   end
 
   def face
@@ -339,14 +332,6 @@ module GameMechanic
     end
   end
 
-  def reset_game
-    self.deck = Deck.new
-    player.cards = []
-    dealer.cards = []
-    display_new_game
-    continue?("Press Enter to continue!")
-  end
-
   def detect_busted(player)
     if player.busted?
       show_busted
@@ -373,6 +358,7 @@ class TwentyOne
     @deck = Deck.new
     @player = Player.new
     @dealer = Dealer.new
+    @current_player = [player, dealer]
   end
 
   def start
@@ -392,16 +378,22 @@ class TwentyOne
   private
 
   def game_main_loop
-    loop do
-      display_players_banner
-      deal_cards
-      show_turn_hands(false)
+    display_players_banner
+    deal_cards
+    show_turn_hands(false)
+    2.times do
+      current_player_turn
+      return if detect_busted(@current_player[0])
+      @current_player.reverse!
+    end
+    show_result
+  end
+
+  def current_player_turn
+    if @current_player[0].instance_of?(Player)
       player_turn
-      break if detect_busted(player)
+    else
       dealer_turn
-      break if detect_busted(dealer)
-      show_result
-      break
     end
   end
 
@@ -415,6 +407,15 @@ class TwentyOne
       end
       puts "Sorry that's not a valid option!"
     end
+  end
+
+  def reset_game
+    self.deck = Deck.new
+    player.cards = []
+    dealer.cards = []
+    @current_player = [player, dealer]
+    display_new_game
+    continue?("Press Enter to continue!")
   end
 end
 
