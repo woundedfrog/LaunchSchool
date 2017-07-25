@@ -123,25 +123,26 @@ class Participant
   private
 
   def format_cards_display(cards)
-    top = []
-    mid1 = []
-    mid2 = []
-    mid3 = []
-    bott = []
+    lines_hash = { top: [], mid1: [], mid2: [], mid3: [], bott: [] }
     cards.each do |card|
       face = card.face
       face = card.face[0] if ["Ace", "Jack", "Queen", "King"].include?(face)
-      top << " ___ "
-      mid1 << "|" + (" " * (3 - face.size)) + "#{face}|"
-      mid2 << "| #{card.suit} |"
-      mid3 << "|#{face}" + (" " * (3 - face.size)) + "|"
-      bott << " ‾‾‾ "
+      create_cards_visuals(lines_hash, card, face)
     end
-    print_formated_cards(top, mid1, mid2, mid3, bott)
+    print_formated_cards(lines_hash)
   end
 
-  def print_formated_cards(*card_parts)
-    card_parts.each { |parts| puts parts.join(" ") }
+  def create_cards_visuals(lines_hash, card, face)
+    spacing = " " * (3 - face.size)
+    lines_hash[:top] << " ___ "
+    lines_hash[:mid1] << "|" + spacing + "#{face}|"
+    lines_hash[:mid2] << "| #{card.suit} |"
+    lines_hash[:mid3] << "|#{face}" + spacing + "|"
+    lines_hash[:bott] << " ‾‾‾ "
+  end
+
+  def print_formated_cards(lines_hash)
+    lines_hash.values.each { |value| puts value.join(" ") }
   end
 end
 
