@@ -2,10 +2,26 @@
 
 class Card
   attr_reader :rank, :suit
+  include Comparable
+  
+  VALUES = { "Jack" => 11, "Queen" => 12, "King" => 13, "Ace" => 14}
+  SUITS_VALUES = { 'Diamonds' => 1, 'Clubs' => 2, 'Hearts' => 3, 'Spades' => 4}
 
   def initialize(rank, suit)
     @rank = rank
     @suit = suit
+  end
+
+  def value
+    VALUES.fetch(@rank, @rank) + SUITS_VALUES[suit]
+  end
+
+  def <=>(other)
+    value <=> other.value
+  end
+
+  def to_s
+    "#{rank} of #{suit}"
   end
 end
 #For this exercise, numeric cards are low cards, ordered from 2 through 10. Jacks are higher than 10s, Queens are higher than Jacks, Kings are higher than Queens, and Aces are higher than Kings. The suit plays no part in the relative ranking of cards.
@@ -16,9 +32,12 @@ end
 
 #Examples:
 
+
+
 cards = [Card.new(2, 'Hearts'),
          Card.new(10, 'Diamonds'),
          Card.new('Ace', 'Clubs')]
+
 puts cards
 puts cards.min == Card.new(2, 'Hearts')
 puts cards.max == Card.new('Ace', 'Clubs')
@@ -44,6 +63,7 @@ cards = [Card.new(8, 'Diamonds'),
          Card.new(8, 'Spades')]
 puts cards.min.rank == 8
 puts cards.max.rank == 8
+
 #Output:
 #
 #2 of Hearts
@@ -58,4 +78,18 @@ puts cards.max.rank == 8
 #true
 #true
 #true
+#true
+puts ""
+cards = [Card.new(7, 'Diamonds'),
+         Card.new('Jack', 'Diamonds'),
+         Card.new('Jack', 'Spades')]
+puts cards.min == Card.new(7, 'Diamonds')
+puts cards.max.rank == 'Jack'
+puts cards.max
+puts cards.max == Card.new('Jack', 'Spades')
+
+#output:
+#true
+#true
+#Jack of Spades
 #true
