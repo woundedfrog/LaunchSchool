@@ -91,6 +91,14 @@ class TodoList
     @todos.delete_at(idx)
   end
 
+  def select
+    selection = TodoList.new(title)
+    self.each do |element|
+      selection.add(element) if yield(element) 
+    end
+    selection
+  end
+
   def shift
     @todos.delete_at(0) # or #.shift
   end 
@@ -123,7 +131,9 @@ list.add(todo1)
 list.add(todo2)
 list.add(todo3)
 
+todo1.done!
+todo2.done!
 
-#list.each do |todo|
-#  puts todo                   # calls Todo#to_s
-#end
+results = list.select { |todo| todo.done? }    # you need to implement this method
+
+puts results.inspect
