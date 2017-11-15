@@ -168,3 +168,5 @@ list = TodoList.new("Today's Todos")
 list.add(todo1)
 list.add(todo2)
 list.add(todo3)
+
+#p list.all_not_done

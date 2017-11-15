@@ -1,3 +1,5 @@
+require 'simplecov'
+SimpleCov.start
 require 'minitest/autorun'
 require "minitest/reporters"
 Minitest::Reporters.use!
@@ -170,5 +172,20 @@ class TodoListTest < MiniTest::Test
 
     assert_equal(list.title, @list.title)
     assert_equal(list.to_s, @list.select{ |todo| todo.done? }.to_s)
+  end
+
+  def test_mark_done
+    @list.mark_done('buy milk')
+    assert_equal(true, @todo1.done?)
+  end
+
+  def test_all_done
+    @list.mark_all_done
+    assert_equal(3, @list.all_done.size)
+  end
+
+  def test_all_not_done
+    @list.mark_all_undone
+    assert_equal(3, @list.all_not_done.size)
   end
 end
