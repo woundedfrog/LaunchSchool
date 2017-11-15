@@ -76,12 +76,28 @@ class TodoList
     @todos.delete_at(-1) # or #.pop
   end
 
+  def remove_at(idx)
+    raise IndexError if idx > self.size
+
+    @todos.delete_at(idx)
+  end
+
   def shift
     @todos.delete_at(0) # or #.shift
   end 
 
   def size
     @todos.size
+  end
+
+  def to_a
+    @todos
+  end
+
+  def to_s
+    text = "---- #{title} ----\n"
+    text << @todos.map(&:to_s).join("\n")
+    text
   end
 end
 
@@ -97,3 +113,15 @@ list = TodoList.new("Today's Todos")
 list.add(todo1)
 list.add(todo2)
 list.add(todo3)
+
+
+
+# remove_at
+#list.remove_at                  # raises ArgumentError
+p list.remove_at(1)               # removes and returns the 2nd item
+#list.remove_at(100)             # raises IndexError
+
+# ---- Outputting the list -----
+
+# to_s
+puts list.to_s 
