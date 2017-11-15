@@ -85,6 +85,18 @@ class TodoList
     @todos[-1]
   end
 
+  def mark_done(todo_title)
+    find_by_title(todo_title).done!
+  end
+
+  def mark_all_done
+    each { |todo| todo.done! }
+  end
+
+  def mark_all_undone
+    each { |todo| todo.undone! }
+  end
+
   def mark_done_at(idx)
     item_at(idx).done!
   end
