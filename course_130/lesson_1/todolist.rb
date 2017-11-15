@@ -50,6 +50,15 @@ class TodoList
   end
   alias_method :add, :<<
 
+  def each
+    idx = 0
+    while idx < @todos.size
+      yield(@todos[idx])
+      idx += 1
+    end
+    self
+  end
+
   def first
     @todos[0]
   end
@@ -115,13 +124,6 @@ list.add(todo2)
 list.add(todo3)
 
 
-
-# remove_at
-#list.remove_at                  # raises ArgumentError
-p list.remove_at(1)               # removes and returns the 2nd item
-#list.remove_at(100)             # raises IndexError
-
-# ---- Outputting the list -----
-
-# to_s
-puts list.to_s 
+#list.each do |todo|
+#  puts todo                   # calls Todo#to_s
+#end
