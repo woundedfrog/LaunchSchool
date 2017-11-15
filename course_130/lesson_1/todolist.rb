@@ -54,6 +54,12 @@ class TodoList
     @todos[0]
   end
 
+  def item_at(idx)
+    raise IndexError if idx > self.size
+
+    @todos[idx]
+  end
+
   def last
     @todos[-1]
   end
@@ -75,11 +81,3 @@ list = TodoList.new("Today's Todos")
 list.add(todo1)
 list.add(todo2)
 list.add(todo3)
-
-list.size                       # returns 3
-
-# first
-list.first                      # returns todo1, which is the first item in the list
-
-# last
-list.last
