@@ -22,6 +22,10 @@ class Todo
     done
   end
 
+  def undone?
+    !done
+  end
+
   def undone!
     self.done = false
   end
