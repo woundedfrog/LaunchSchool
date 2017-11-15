@@ -60,6 +60,16 @@ class TodoList
 
   def all_not_done
     select(&:undone?)
+  end 
+
+  def done!
+    @todos.each_index do |idx|
+      mark_done_at(idx)
+    end
+  end
+
+  def done?
+    @todos.all? { |todo| todo.done? }
   end
 
   def each
