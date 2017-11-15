@@ -47,7 +47,7 @@ class TodoListTest < MiniTest::Test
     assert_equal(@todo3, todo)
     assert_equal([@todo1, @todo2], @list.to_a)
   end
-  
+
   def test_done_question
     assert_equal(false, @list.done?)
   end
@@ -56,20 +56,95 @@ class TodoListTest < MiniTest::Test
     assert_raises(TypeError) { @list.add(1) }
     assert_raises(TypeError) { @list.add('hi') }
   end
-  
+
   def test_shovel
     new_todo = Todo.new("Play with hamster")
     @list << new_todo
     @todos << new_todo
-    
+
     assert_equal(@todos, @list.to_a)
   end
-  
+
   def test_add_alias
     new_todo = Todo.new("Play with hamster")
     @list.add(new_todo)
     @todos << new_todo
-    
+
     assert_equal(@todos, @list.to_a)
+  end
+
+  def test_item_at
+    assert_raises(IndexError) { @list.item_at(100) }
+    assert_equal(@todo1, @list.item_at(0))
+    assert_equal(@todo2, @list.item_at(1))
+  end
+
+  def test_mark_done_at
+    assert_raises(IndexError) { @list.mark_done_at(100) }
+    @list.mark_done_at(0)
+    assert_equal(true, @todo1.done?)
+    assert_equal(false, @todo2.done?)
+    assert_equal(false, @todo3.done?)
+  end
+
+  def test_mark_undone_at
+    assert_raises(IndexError) { @list.mark_undone_at(100) }
+    @todo1.done!
+    @todo2.done!
+    @todo3.done!
+
+    @list.mark_undone_at(0)
+
+    assert_equal(false, @todo1.done?)
+    assert_equal(true, @todo2.done?)
+    assert_equal(true, @todo3.done?)
+  end
+
+  def test_done_bang
+    @list.done!
+    assert_equal(true, @todo1.done?)
+    assert_equal(true, @todo2.done?)
+    assert_equal(true, @todo3.done?)
+    assert_equal(true, @list.done?)
+  end
+
+  def test_remove_at_index
+    assert_raises(IndexError) { @list.remove_at(100) }
+    @list.remove_at(1)
+    assert_equal([@todo1, @todo3], @list.to_a)
+  end
+  
+  def test_to_s
+    output = <<~OUTPUT.chomp
+             ---- Today's Todos ----
+             [ ] Buy milk
+             [ ] Clean room
+             [ ] Go to gym
+             OUTPUT
+    assert_equal(output, @list.to_s)
+  end
+
+  def test_to_s_2
+    output = <<~OUTPUT.chomp
+             ---- Today's Todos ----
+             [ ] Buy milk
+             [X] Clean room
+             [ ] Go to gym
+             OUTPUT
+
+    @list.mark_done_at(1)
+    assert_equal(output, @list.to_s)
+  end
+  
+    def test_to_s_2
+    output = <<~OUTPUT.chomp
+             ---- Today's Todos ----
+             [X] Buy milk
+             [X] Clean room
+             [X] Go to gym
+             OUTPUT
+
+    @list.done!
+    assert_equal(output, @list.to_s)
   end
 end
