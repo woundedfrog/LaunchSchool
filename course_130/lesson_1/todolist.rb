@@ -64,6 +64,22 @@ class TodoList
     @todos[-1]
   end
 
+  def mark_done_at(idx)
+    item_at(idx).done!
+  end
+
+  def mark_undone_at(idx)
+    item_at(idx).undone!
+  end
+
+  def pop
+    @todos.delete_at(-1) # or #.pop
+  end
+
+  def shift
+    @todos.delete_at(0) # or #.shift
+  end 
+
   def size
     @todos.size
   end
