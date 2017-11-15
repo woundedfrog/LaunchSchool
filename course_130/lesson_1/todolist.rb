@@ -50,6 +50,14 @@ class TodoList
   end
   alias_method :add, :<<
 
+  def all_done
+    select(&:done?)
+  end
+
+  def all_not_done
+    select(&:undone?)
+  end
+
   def each
     idx = 0
     while idx < @todos.size
