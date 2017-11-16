@@ -22,36 +22,66 @@ def map(array)
   new_array
 end
 
-#Or easier:
+#This version takes a Collection type and makes changes accoring to the block - Then returns the same class with new changes:
 
 def map(collection)
-  class_type = collection.class
+  return collection if collection.empty?
+  class_t = collection.class
   values = []
-  collection.each { |*item| values << yield(*item) }
- 
   
-  case class_type
-    when Array
-    final =values.to_a
-    when Hash
-     fina = values.to_h
-    when Set
-     final = values.to_set
-  end
-  final
+  collection.each { |*item| values << yield(*item) }
+  
+    case class_t.to_s
+    when "Array"
+      values.to_a
+    when "Hash"
+      values.to_h
+    else
+      values.to_set
+    end
 end
 
+obj1 = {'a' => 'b'}
+obj2 = Set.new([1,2,3])
+obj3 = [1, 3, 4]
 
-#p map({'a' => 'b'}) { |k, val| [k, val * 2] }
-#
-my_set = Set.new([1,2,3])
-puts "this is my set: #{ my_set.to_a}"
+puts "Hash"
+p map(obj1) { |k, val| [k, val * 2] }
+puts "Set"
+p map(obj2) { |value| value + 2 }
+puts "Array"
+p map(obj3) { |value| (1..value).to_a } == [[1], [1, 2, 3], [1, 2, 3, 4]]
 
-x = map(my_set) { |value| value + 2 }
+puts "More arrays"
+p map([1, 3, 6]) { |value| value**2 } == [1, 9, 36]
+p map([]) { |value| true } == []
+p map(['a', 'b', 'c', 'd']) { |value| false } == [false, false, false, false]
+p map(['a', 'b', 'c', 'd']) { |value| value.upcase } == ['A', 'B', 'C', 'D']
+p map([1, 3, 4]) { |value| (1..value).to_a } == [[1], [1, 2, 3], [1, 2, 3, 4]]
 
-puts x
-#p map([1, 3, 6]) { |value| value**2 } == [1, 9, 36]
-#p map([]) { |value| true } == []
-#p map(['a', 'b', 'c', 'd']) { |value| false } == [false, false, false, false]
-#p map(['a', 'b', 'c', 'd']) { |value| value.upcase } == ['A', 'B', 'C', 'D']
-#p map([1, 3, 4]) { |value| (1..value).to_a } == [[1], [1, 2, 3], [1, 2, 3, 4]]
+
+#This version acts more like the Included #.map that is in Ruby, but is not as useful, imo.
+
+def map(collection)
+  return [] if collection.empty?
+  class_t = collection.class
+  values = []
+  
+  collection.each { |*item| values << yield(*item) }
+  
+  values
+end
+
+puts ''
+puts 'Mixed Collections'
+hash = { 1=> "m", 2=> "c", 3=> "s" }
+set = Set[1, 3, 6]
+
+p map(hash) { |_, v| v += "at" } == ["mat", "cat", "sat"]
+p map(set) { |value| value**2 } == [1, 9, 36]
+p map({}) { |value| true } == []
+p map(Set[]) { |value| true } == []
+p map(hash) { |value| false } == [false, false, false]
+p map(set) { |value| false } == [false, false, false]
+p map(hash) { |_, value| value.upcase } == ['M', 'C', 'S']
+p map(set) { |value| (1..value).to_a } == [[1], [1, 2, 3], [1, 2, 3, 4, 5, 6]]
