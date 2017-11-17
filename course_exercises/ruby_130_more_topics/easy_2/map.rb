@@ -22,49 +22,10 @@ def map(array)
   new_array
 end
 
-#This version takes a Collection type and makes changes accoring to the block - Then returns the same class with new changes:
-
-def map(collection)
-  return collection if collection.empty?
-  class_t = collection.class
-  values = []
-  
-  collection.each { |*item| values << yield(*item) }
-  
-    case class_t.to_s
-    when "Array"
-      values.to_a
-    when "Hash"
-      values.to_h
-    else
-      values.to_set
-    end
-end
-
-obj1 = {'a' => 'b'}
-obj2 = Set.new([1,2,3])
-obj3 = [1, 3, 4]
-
-puts "Hash"
-p map(obj1) { |k, val| [k, val * 2] }
-puts "Set"
-p map(obj2) { |value| value + 2 }
-puts "Array"
-p map(obj3) { |value| (1..value).to_a } == [[1], [1, 2, 3], [1, 2, 3, 4]]
-
-puts "More arrays"
-p map([1, 3, 6]) { |value| value**2 } == [1, 9, 36]
-p map([]) { |value| true } == []
-p map(['a', 'b', 'c', 'd']) { |value| false } == [false, false, false, false]
-p map(['a', 'b', 'c', 'd']) { |value| value.upcase } == ['A', 'B', 'C', 'D']
-p map([1, 3, 4]) { |value| (1..value).to_a } == [[1], [1, 2, 3], [1, 2, 3, 4]]
-
-
-#This version acts more like the Included #.map that is in Ruby, but is not as useful, imo.
+#alternative versions:
 
 def map(collection)
   return [] if collection.empty?
-  class_t = collection.class
   values = []
   
   collection.each { |*item| values << yield(*item) }
@@ -72,7 +33,12 @@ def map(collection)
   values
 end
 
-puts ''
+#or:
+
+def map(collection)
+collection.each.with_object([]) { |item, arr| arr << yield(item) }
+end
+
 puts 'Mixed Collections'
 hash = { 1=> "m", 2=> "c", 3=> "s" }
 set = Set[1, 3, 6]
@@ -85,3 +51,65 @@ p map(hash) { |value| false } == [false, false, false]
 p map(set) { |value| false } == [false, false, false]
 p map(hash) { |_, value| value.upcase } == ['M', 'C', 'S']
 p map(set) { |value| (1..value).to_a } == [[1], [1, 2, 3], [1, 2, 3, 4, 5, 6]]
+
+
+###########
+#This version takes a Collection type and makes changes accoring to the block - Then returns the same class with new changes:
+
+def map_and_convert(collection)
+  return collection if collection.empty?
+  class_t = collection.class.to_s
+  values = []
+  
+  collection.each do |a, b|
+    new = yield(a, b)
+    if class_t == 'Hash'
+      new = [a,b] if new.nil?
+      new = [a,new] unless new.is_a?(Array)
+    elsif new.nil?
+      new = a
+    end
+      values << new 
+    end
+  
+    case class_t
+    when "Hash"
+      values.to_h
+    when "Set"
+      values.to_set
+    else
+      values
+    end
+end
+
+obj1 = {'a' => 'b', 'c' => 'd'}
+obj2 = Set.new([1,2,3])
+obj3 = [1, 3, 4, 8]
+hash = { 1=> "m", 2=> "c", 3=> "s" }
+set = Set[1, 3, 6]
+puts''
+puts "Map and restore original collection type"
+puts "hashes"
+p map_and_convert(obj1) { |k, v| [k,'a' + v] if k == 'a' || k == "d" }
+p map_and_convert(obj1) { |k, v| [k * 3, v] }
+p map_and_convert(hash) { |_, v| v += "at" }
+p map_and_convert({}) { |value| true }
+p map_and_convert(hash) { |value| false } 
+p map_and_convert(hash) { |_, value| value.upcase }
+puts '*******'
+puts "Array"
+p map_and_convert(obj3) { |k| k + 2 }
+p map_and_convert([1, 3, 6]) { |value| value**2 } == [1, 9, 36]
+p map_and_convert([]) { |value| true } == []
+p map_and_convert(['a', 'b', 'c', 'd']) { |value| false } == [false, false, false, false]
+p map_and_convert(['a', 'b', 'c', 'd']) { |value| value.upcase } == ['A', 'B', 'C', 'D']
+p map_and_convert([1, 3, 4]) { |value| (1..value).to_a } == [[1], [1, 2, 3], [1, 2, 3, 4]]
+
+puts "My Set"
+p map_and_convert(obj2) { |value| value + 2 }.object_id
+obj2.object_id
+p map_and_convert(set) { |value| value**2 }
+p map_and_convert(Set[]) { |value| true }
+p map_and_convert(set) { |value| false } 
+p map_and_convert(set) { |value| (1..value).to_a } 
+
