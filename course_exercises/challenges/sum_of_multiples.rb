@@ -18,13 +18,15 @@ end
 #  
 #  def self.to(limit)
 #    sum = self.new(3,5)
-#    sum.format_number(limit)
+#    sum.to(limit)
 #  end
 #  
 #  def to(limit)
 #    format_number(limit)
 #  end
-#  
+#
+#  private
+#
 #  def format_number(limit)
 #    multiples = []
 #    (1..limit-1).each do |num|
@@ -37,6 +39,7 @@ end
 #    @multipliers.any? { |mul| num % mul == 0 }
 #  end
 #end
+
 #OR:
 
 class SumOfMultiples
