@@ -27,27 +27,52 @@ Finally, if two elements are now removed then what would be returned is not 3 & 
 
 [ ][7][8][9][A][B][ ]
 =end
-
-class BufferEmptyException < Exception; end
-class BufferFullException < Exception; end
+require 'pry'
+# class BufferEmptyException < Exception; end
+# class BufferFullException < Exception; end
 
 class CircularBuffer
 
+  attr_accessor :buffer, :buffer_size
+
   def initialize(buffer_size)
-    @buffer = Array.new(buffer_size)
-    @buffer_indices = Array.new((0..buffer_size-1).to_a)
-    @buffer_reads = @buffer.clone
+    @buffer = []
+    @buffer_size = buffer_size
   end
 
   def read
-    raise BufferEmptyException
-    buffer_value = @buffer_reads.first
-    (@buffer_reads = @buffer_reads[1..-1] << @buffer_reads[0]) || raise BufferEmptyException
+    buffer.empty? ? raise(BufferEmptyException) : buffer.shift
   end
 
   def write(value)
-    oldest = @buffer_indices
-    @buffer[@buffer_indices.first] = value
-    @buffer_indices[1..-1] << @buffer_indices[0]
+    if value.nil?
+      return
+    elsif full?
+      raise(BufferFullException)
+    else
+      buffer << value unless value.nil?
+    end
   end
+
+  def write!(value)
+    return if value.nil?
+    if full?
+      buffer.shift
+      buffer << value
+    else
+      write(value)
+    end
+  end
+
+  def full?
+    buffer.size == buffer_size
+  end
+
+  def clear
+    self.buffer = []
+  end
+
+  class BufferEmptyException < StandardError; end
+  class BufferFullException < StandardError; end
+
 end
