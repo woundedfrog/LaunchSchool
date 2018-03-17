@@ -6,9 +6,8 @@ class Cipher
   attr_accessor :key
 
   def initialize(key = nil)
-    @key =  key.nil? ? (1..100).to_a.map { |_| CIPHER.sample }.join : key
-    raise(ArgumentError) if key == '' || /[A-Z]|\d/.match(key)
-    # @text =
+  raise(ArgumentError) if key == '' || /[A-Z]|\d/.match(key)
+    @key =  key || (1..100).to_a.map { |_| CIPHER.sample }.join
   end
 
   def encode(input)
@@ -16,13 +15,11 @@ class Cipher
     new_cipher = []
 
     input.size.times do |idx|
-
       position = CIPHER.index(input[idx])
       key_position = CIPHER.index(@key[idx])
       changed_value = verify_position(position + key_position)
 
       new_cipher << CIPHER[changed_value]
-
     end
     new_cipher.join
   end
@@ -35,7 +32,6 @@ class Cipher
 
       position = CIPHER.index(input[idx])
       key_position = CIPHER.index(@key[idx])
-          # binding.pry
       changed_value = verify_position(position - key_position)
 
       new_cipher << CIPHER[changed_value]
@@ -45,7 +41,7 @@ class Cipher
   end
 
   def verify_position(new_position)
-    if new_position > CIPHER.size
+    if new_position > CIPHER.size - 1
       new_position -= CIPHER.size
     end
     new_position

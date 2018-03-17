@@ -87,14 +87,14 @@ class SubstitutionCipherTest < MiniTest::Test
   end
 
   def test_double_shift_encode
-    skip
+    # skip
     plaintext = 'iamapandabear'
     ciphertext = 'qayaeaagaciai'
     assert_equal(ciphertext, Cipher.new('iamapandabear').encode(plaintext))
   end
 
   def test_cipher_encode_wrap
-    skip
+    # skip
     plaintext = 'zzzzzzzzzz'
     ciphertext = 'zabcdefghi'
     assert_equal(ciphertext, @cipher.encode(plaintext))
