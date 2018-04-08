@@ -11,20 +11,23 @@
 # Test suite:
 
 class PhoneNumber
+  INVALID = '0000000000'
+
   def initialize(the_number)
     @the_number = the_number.gsub(/[^a-z0-9]/i, "")
   end
 
   def number
-    the_number = @the_number.gsub(/[^0-9]/, "")
-    if the_number.size > 11 || the_number.size < 10 || !(/[a-z]/i =~ @the_number).nil?
-      '0000000000'
-    elsif the_number.size == 10
+    the_number = @the_number
+
+    return INVALID if the_number.size > 11 || the_number.size < 10 || !(/[a-z]/i =~ the_number).nil?
+
+    if the_number.size == 10
       the_number
     elsif the_number.size == 11 && the_number[0] == '1'
       the_number[1..-1]
     else
-      '0000000000'
+      INVALID
     end
   end
 
