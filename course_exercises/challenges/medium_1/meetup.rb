@@ -20,8 +20,10 @@ class Meetup
   end
 
   def day(day, placement)
+    day = (day.to_s + "?").to_sym
+
     total_days.times do
-      return @date if @date.send((day.to_s + "?").to_sym) == true && method_helper(day, placement)
+      return @date if @date.send(day) == true && method_helper(day, placement)
       counter = 1
       @date = @date.next_day(n=counter)
       counter += 1
@@ -29,51 +31,32 @@ class Meetup
   end
 
   def method_helper(day, placement)
-    @day = (day.to_s + "?").to_sym
+    @day = day
 
     case placement
     when :teenth
-      return send(placement) == true
+      (13..19).to_a.include?(@date.day)
     when :first
-      return send(placement)
+      day_calculator(1)
     when :second
-      return send(placement) == @date
+      day_calculator(2) == @date
     when :third
-      return send(placement) == @date
+      day_calculator(3) == @date
     when :fourth
-      return send(placement) == @date
+      day_calculator(4) == @date
     when :last
-      return send(placement) == @date
-    else
-      return "nothing"
+      last == @date
     end
   end
 
   def teenth
-    (13..19).to_a.include?(@date.day)
-  end
-
-  def first
-      day_calculator(1)
-  end
-
-  def second
-    day_calculator(2)
-  end
-
-  def third
-      day_calculator(3)
-  end
-
-  def fourth
-    day_calculator(4)
   end
 
   def last
     new_date = Date.new(@year, @month, total_days)
-
     counter = 0
-    31.times do |c|
+
+    total_days.times do |c|
       date = new_date.prev_day(n=c)
       counter += 1 if date.send(@day)
       return date if counter == 1
