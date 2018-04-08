@@ -20,19 +20,19 @@ class Meetup
     @date = Date.new(@year, @month, 1)
   end
 
-  def day(day, placement)
-    @day = (day.to_s + "?").to_sym
+  def day(weekday, schedule)
+    @weekday = (weekday.to_s + "?").to_sym
 
     total_days.times do
-      return @date if @date.send(@day) == true && method_helper(placement)
+      return @date if @date.send(@weekday) == true && method_helper(schedule)
       counter = 1
       @date = @date.next_day(n=counter)
       counter += 1
     end
   end
 
-  def method_helper(placement)
-    case placement
+  def method_helper(schedule)
+    case schedule
     when :teenth
       (13..19).to_a.include?(@date.day)
     when :first
@@ -47,14 +47,14 @@ class Meetup
       last == @date
     end
   end
-  
+
   def last
     new_date = Date.new(@year, @month, total_days)
     counter = 0
 
     total_days.times do |c|
       date = new_date.prev_day(n=c)
-      counter += 1 if date.send(@day)
+      counter += 1 if date.send(@weekday)
       return date if counter == 1
     end
   end
@@ -65,12 +65,12 @@ class Meetup
     counter = 0
     total_days.times do |c|
       date = new_date.next_day(n=c)
-      counter += 1 if date.send(@day)
+      counter += 1 if date.send(@weekday)
       return date if counter == nth
     end
   end
 
   def total_days
-    Date.new(@year,@month,-1).day
+    Date.new(@year, @month, -1).day
   end
 end
