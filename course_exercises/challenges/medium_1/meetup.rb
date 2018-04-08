@@ -13,6 +13,7 @@
 
 
 class Meetup
+
   def initialize(month, year)
     @month = month
     @year = year
@@ -20,19 +21,17 @@ class Meetup
   end
 
   def day(day, placement)
-    day = (day.to_s + "?").to_sym
+    @day = (day.to_s + "?").to_sym
 
     total_days.times do
-      return @date if @date.send(day) == true && method_helper(day, placement)
+      return @date if @date.send(@day) == true && method_helper(placement)
       counter = 1
       @date = @date.next_day(n=counter)
       counter += 1
     end
   end
 
-  def method_helper(day, placement)
-    @day = day
-
+  def method_helper(placement)
     case placement
     when :teenth
       (13..19).to_a.include?(@date.day)
@@ -48,10 +47,7 @@ class Meetup
       last == @date
     end
   end
-
-  def teenth
-  end
-
+  
   def last
     new_date = Date.new(@year, @month, total_days)
     counter = 0
@@ -76,9 +72,5 @@ class Meetup
 
   def total_days
     Date.new(@year,@month,-1).day
-  end
-
-  def what_day?(new_date)
-    Time.new(new_date.year,new_date.mon,new_date.day).strftime("%A")
   end
 end
