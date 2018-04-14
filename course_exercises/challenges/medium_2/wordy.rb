@@ -21,7 +21,7 @@
 # output: solution to the math problem from input.
 #         scan words and change words to actual corresponding values.
 #         problem is read from left to right.
-require 'pry'
+
 class WordProblem
 
   OPERATORS = {'plus'=> '+', 'minus'=> '-', 'multiplied' => '*', 'divided' => '/'}
@@ -41,7 +41,6 @@ class WordProblem
   end
 
   private
-
 
   def string_filter(string_problem)
     OPERATORS.keys.each do |oper|
