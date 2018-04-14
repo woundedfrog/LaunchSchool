@@ -24,36 +24,33 @@
 require 'pry'
 class WordProblem
 
-  OPERATORS = {'plus'=>:+, 'minus'=>:-, 'multiplied by' => :*, 'divided by' => :/}
+  OPERATORS = {'plus'=> '+', 'minus'=> '-', 'multiplied' => '*', 'divided' => '/'}
 
   attr_accessor :string_arr
 
   def initialize(string_problem)
-    @string_arr = string_filter(string_problem).gsub(/[^0-9\/\*\-\+\s+\:]/,'').split(" ")
-    verify
+    @string_arr = string_filter(string_problem)
+    raise ArgumentError, 'Invalid question' if string_arr.size < 3
   end
 
   def answer
     while string_arr.size > 1
-      analyzer
+      calculator
     end
     string_arr.first
   end
 
   private
 
-  def verify
-    raise ArgumentError if string_arr.size < 3
-  end
 
   def string_filter(string_problem)
     OPERATORS.keys.each do |oper|
-    string_problem.gsub!(oper, OPERATORS[oper].to_s)
+      string_problem.gsub!(oper, OPERATORS[oper])
     end
-    string_problem
+    string_problem.gsub(/[^0-9\/\*\-\+\s+]/,'').split(" ")
   end
 
-  def analyzer
+  def calculator
     val1, operator, val2 = string_arr.shift(3)
     val1 = val1.to_i
     val2 = val2.to_i
